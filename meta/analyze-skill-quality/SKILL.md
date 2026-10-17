@@ -169,6 +169,11 @@ For each outcome and branch, try one input of each class:
 | Indistinguishable | two candidates the stated tie-break cannot separate |
 | Terminal | already in the end state: merged, archived, closed, done |
 | Adversarial | legitimate but not in the author's mind: read-only, wrong type, concurrently modified, stale, from another system |
+| Ordering | a step that consumes what an earlier step has not yet produced: a choice collected after the artifact that needs it, a file read before it is written, a check run before the thing it checks |
+
+Ordering is the one probe that is not an input value at all. It asks whether each step
+runs early enough for the step that needs it, which no amount of boundary or adversarial
+probing will surface.
 
 Fails when the probes are obvious. The best finds are inputs the author had no reason to consider: a read-only target when the purpose is writing to it, a candidate set where nothing is known.
 

@@ -58,6 +58,21 @@ In the corpus this was "scope fidelity": a skill claiming generality while embed
 
 The script's half runs on every skill. It lists non-reserved hosts, absolute paths, owner/name pairs with a capitalised owner, mixed-case product or tool names, capitalised words used twice mid-sentence that never appear in lower case in prose, paths in code spans or links that point outside the skill, and platform CLIs (`gh`, `glab`, `aws`, `vercel` and others) run in code blocks or code spans. Words in the runtime and dependency statements are exempt, and so is everything a scope line names ("Works on GitHub through the `gh` CLI."). When the skill's name carries a context (one of its specifics, or a value given with `--context`), the specifics are not listed. Instead, a long skill with few specifics is flagged as possibly more than the smallest piece. A project layer inside a generic skill is flagged as a companion waiting to be split off. A `Companions` table with no "Without one" outcome is flagged. After every target is read, each "Fills the `<hook>` hook of `<parent>`." line (one parent or several) is checked against each parent's hooks (or listed as not checked when the parent was not in the run), and a skill named like another's companion with no such line is flagged.
 
+**Two shapes that are not paths outside the skill (added 17 Oct 2026).** A media type
+(`application/vnd.github.raw`) and a bare script filename (`commit_files.py`) were both
+reported as paths outside the skill. The first is not a path at all, only a slash-shaped
+word. The second names another skill's tool, and CONVENTIONS.md counts the other files of
+this library — another skill included — as neither a context nor a leaked value, so a
+skill that composes a sibling has to be able to name what it calls; the library's own
+cross-skill pattern is a skill name plus a borrowed credential, which reads oddly when the
+tool it names is flagged.
+
+A path, and a document or data filename the skill does not carry, is still reported: those
+are files the reader is expected to have, and their absence is what the check is for. Both
+new exemptions are regression cases in the clean fixture, and the shape that remains has a
+planted defect (a code span naming a markdown file the skill does not carry), so the
+narrowing is covered in both directions.
+
 #### A worked example
 
 How the rule applies to one skill from the corpus.
@@ -97,6 +112,7 @@ The highest-yield check, and the source of every code defect in the corpus. It f
 
 | Question asked | Defect found |
 | --- | --- |
+| Is each input collected before the step that consumes it? | A manifest was written in one step carrying the branch to commit to, while the choice of branch was asked in the next step, so the manifest could never carry it. The question moved ahead of the artifact. |
 | What happens when the only candidates have no columns captured? | It said `repair`, which means nothing when nothing is known to be missing. Now `ask`. |
 | What happens when the best match is read-only? | It said `use_existing`, though the whole purpose was writing rows into it, and a read-only table beat a writable one on recency. |
 | How is a repair target chosen when several need repair? | Archived demotion was not applied to repair candidates, and a tie silently picked one instead of asking. |
@@ -143,6 +159,14 @@ The script's half: every command in a code block or code span resolved to a scri
 
 **A dependency the doc names is not a contradiction (added 17 Oct 2026).** The third-party-import rule used to fire whenever a doc contained the phrase "standard library", even when the same doc had just declared the package accurately — so the more precisely a doc stated its dependencies, the more certainly it was flagged, and the only way to silence the check was to say nothing. Now a third-party import is only a finding when the doc does not name it, or when the doc claims stdlib-only *without* naming it. A doc reading "One third-party package: `httpx` … everything else is the standard library" is correct and is not flagged.
 
+**A dependency statement may be wrapped (added 17 Oct 2026).** The phrase searches ran
+against the raw text, so a doc saying it needs Python 3.9 or later and the standard
+library only, with the phrase broken across a line, was reported as having no dependency
+statement at all — a false negative in the check that decides whether the commands are
+runnable, and one the author cannot see, because the doc plainly says it. `FLOOR`, `DEPS`
+and `STDLIB_CLAIM` now read a whitespace-collapsed copy of the docs. Filename and flag
+membership keep reading the raw text, where a newline cannot appear mid-token.
+
 **Sibling imports are reported once per module.** Eleven scripts importing one `client.py` produced eleven identical findings, which buries the real ones. They now collapse to a single finding naming the module and the files that import it. These cannot be pre-empted by the doc — the check reads filenames, not prose — so the count is not a signal of doc quality.
 
 ## Input formats
@@ -169,8 +193,6 @@ Beyond producing candidates rather than findings:
 
 - It reads markdown and scripts ending `.py`, `.sh`, `.js`, `.mjs`, `.cjs`, `.ts`, `.rb` or `.pl`. Other files are listed under `not checked`, never silently dropped.
 - Subcommand, flag, import, syntax and cap checks understand Python and its standard argument parser. Other languages get the regex cap check and the command-resolution check only.
-- A nested CLI resolves one subcommand per level, the way argparse does, so `cli.py tasks list --flag` is checked against the `list` parser and not the `tasks` group. A group also accepts its descendants' flags. The path is followed through the variable bindings in source order, so it survives the usual habit of reusing one variable for each sibling parser (`t = tsub.add_parser("list")` … `t = tsub.add_parser("get")`). A subcommand name assembled at run time (from a list, a loop or a format string) is not followed, and a group whose actions are added through a helper function is resolved no deeper than the calls that appear in the file.
-- A command whose subcommand token is a placeholder (`<name>`, `$VAR`, `{id}`, `…`, `...`) is checked against every flag in the script, since the reader is supplying the subcommand.
 - Frontmatter: flat keys, quoted values, block scalars and lists. Nested maps are read as text.
 - The Python floor it estimates comes from syntax alone, not from library calls.
 - Thresholds: quoted sentences are cut at 160 characters; repeated runs under 40 words are not reported; code blocks over 40 lines and more than 8 tags are raised; numeric caps under 10 are ignored; a context-named skill is judged for size only at 300 words or more, and raised when it has fewer than 1 specific per 100 words.
