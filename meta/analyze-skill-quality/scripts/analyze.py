@@ -249,6 +249,7 @@ META_KEYS = {
     "auth": "auth",
     "authentication": "auth",
     "credentials": "auth",
+    "requiresauth": "auth",
 }
 SCRIPT_EXT = {".py", ".sh", ".bash", ".js", ".mjs", ".cjs", ".ts", ".rb", ".pl"}
 SKIP_DIRS = {"node_modules", "__pycache__", "venv"}
@@ -2600,6 +2601,21 @@ def selftest():
         check(len(resolve(tmp)) == 2, "a folder of skills is a sweep")
         e = resolve(export)[0]
         check(e.source == "export" and "tidy.py" in e.scripts and not analyze(e)["findings"], "loads a JSON export")
+        # A host names this field `requiresAuth`; the documented export field is
+        # `authType`. An alias the loader does not know leaves check 2's auth half
+        # reporting "not checked", so a `none` declaration beside a credential the
+        # scripts read goes unseen. This is the shape reference.md says recurred.
+        creds = CLEAN["scripts/tidy.py"].replace(
+            "import sys\n", "import os\nimport sys\nTOKEN = os.environ[\"NOTES_API_TOKEN\"]\n", 1)
+        export_auth = Path(tmp, "export-auth.json")
+        export_auth.write_text(json.dumps({"data": {
+            "name": "tidy-notes", "description": "Sorts a folder of plain-text notes into dated files.",
+            "documentation": body, "requiresAuth": "none",
+            "scripts": json.dumps([{"filename": "tidy.py", "content": creds}])}}))
+        ea = analyze(resolve(export_auth)[0])
+        check(any(f["check"] == 2 for f in ea["findings"])
+              and not any("no auth declaration" in n for n in ea["not_checked"]),
+              "an export's `requiresAuth` is read as the auth declaration")
         try:
             resolve(Path(tmp, "missing"))
             check(False, "a missing target is an input error")

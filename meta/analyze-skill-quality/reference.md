@@ -171,7 +171,7 @@ membership keep reading the raw text, where a newline cannot appear mid-token.
 
 ## Input formats
 
-A skill folder holds `SKILL.md` and any other markdown or script files beneath it; hidden folders, `node_modules`, `__pycache__` and `venv` are skipped. A JSON export is an object whose `data` key (or the object itself) holds `documentation` or `skillMdBody`, and optionally `name`, `description`, `whenToUse`, `tags` (a list, or a JSON string of one), `authType`, and `scripts` and `references` as lists of `{filename, content}` (or JSON strings of them). Entries ending `.md` are read as gated docs; the rest as scripts. If both `documentation` and `skillMdBody` are present and differ, that is reported as a contradiction.
+A skill folder holds `SKILL.md` and any other markdown or script files beneath it; hidden folders, `node_modules`, `__pycache__` and `venv` are skipped. A JSON export is an object whose `data` key (or the object itself) holds `documentation` or `skillMdBody`, and optionally `name`, `description`, `whenToUse`, `tags` (a list, or a JSON string of one), `authType` (or a host's `requiresAuth`, read the same way), and `scripts` and `references` as lists of `{filename, content}` (or JSON strings of them). Entries ending `.md` are read as gated docs; the rest as scripts. If both `documentation` and `skillMdBody` are present and differ, that is reported as a contradiction.
 
 ## Exit 2 messages
 
