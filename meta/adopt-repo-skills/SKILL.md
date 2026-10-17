@@ -107,9 +107,11 @@ python3 api.py GET /repos/{owner}/{repo}/git/trees/{ref}?recursive=1 \
 
 Fetch that skill's script first — `FetchSkillScripts("github-api")` — then run
 the command under `RunWithCredentials(skillName="github-api", ...)` so the token
-is injected. Fetch this skill's own script too — `FetchSkillScripts("adopt-repo-skills")`
-— and run every `repo_skill_inventory.py` command below from the directory that
-lands in. `{ref}` defaults to `main`; on a repo whose default branch differs,
+is injected. This skill's own script sits beside this `SKILL.md`, at
+`scripts/repo_skill_inventory.py`: read it out of the repo folder the resolver
+named, because the local copy of this skill is a pointer and carries no scripts
+of its own. Run every `repo_skill_inventory.py` command below from the directory
+you put it in. `{ref}` defaults to `main`; on a repo whose default branch differs,
 resolve it first (`GET /repos/{owner}/{repo}` → `default_branch`) rather than
 assuming, and record which ref you used.
 
