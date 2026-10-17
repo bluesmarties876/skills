@@ -1630,6 +1630,9 @@ def error_messages(tree):
 def check_adequacy(s, ctx):
     out = []
     docs = all_text(s)
+    # A message the doc carries, wrapped across a line ending, is still one message.
+    # Every other phrase search here reads the flattened copy for the same reason.
+    docs_flat = re.sub(r"\s+", " ", docs)
     blocks = [b["text"] for d in s.docs for b in d.blocks]
     shared_blocks = [b["text"] for d in s.shared for b in d.blocks]
     defined = outcome_tokens(s)
@@ -1647,7 +1650,7 @@ def check_adequacy(s, ctx):
         if "--json" in shared or any("--json" in f for f in sub_flags.values()):
             offers_json = True
         msgs = error_messages(tree)
-        missing = [m for m in msgs if m not in docs]
+        missing = [m for m in msgs if m not in docs_flat]
         if missing:
             out.append(finding(11, fn, f"{len(missing)} of {len(msgs)} error messages the script prints appear in "
                                        f"no doc, e.g. " + ", ".join(f"\"{m}\"" for m in missing[:3])
@@ -2178,6 +2181,9 @@ INJECTIONS = [
         "SKILL.md", "\nIt fetches each note from the shared inbox before sorting, and downloads attachments.\n")),
     (11, "a subcommand nobody shows", _edit("scripts/tidy.py", "    c = sub.add_parser(\"check\")",
                                             "    sub.add_parser(\"undo\")\n    c = sub.add_parser(\"check\")")),
+    (11, "an error message no doc carries", _edit(
+        "SKILL.md", "prints `undated note, no date line: <file>` and exits 1.",
+        "exits 1 when the note has no date line.")),
     (11, "--json without a JSON sample", _edit("SKILL.md", "```json\n{\"file\": \"a.txt\", \"result\": \"moved\", "
                                                            "\"date\": \"2024-01-02\"}\n```\n", "")),
     (12, "a flag the script does not take", _append("SKILL.md", "\n```\npython3 scripts/tidy.py sort --dry-run\n```\n")),
@@ -2209,6 +2215,9 @@ STILL_CLEAN = [
     ("a negation inside a hyphenated word", _append(
         "SKILL.md", "\n## Labels\n\nThe `dest` folder lists not-checked notes.\n\n## Paths\n\n"
                     "The `dest` folder is created.\n")),
+    ("an error message the doc carries, wrapped", _edit(
+        "SKILL.md", "prints `undated note, no date line: <file>` and exits 1.",
+        "prints `undated note, no date\nline: <file>` and exits 1.")),
     ("a description with one word the body never uses", _edit(
         "SKILL.md", "reports what moved.", "reports what moved, including duplicates.")),
     ("a whenToUse of trigger vocabulary the body never echoes", _edit(
