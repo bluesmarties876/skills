@@ -131,6 +131,12 @@ Rules for the judgement halves, so they are not argued afresh each run:
 
 - **1. Read for pairs.** Five shapes: claim against claim, metadata against body, sample against sample, scope claim against content, promise against procedure. The last is the sharpest ("every item" with no pagination loop), and its fix is usually in the code.
 - **3. Agnostic, or named and minimal.** A value belongs in the context's agent instructions. An opinionated procedure belongs in a companion skill named `<context>-<skill>-<piece>`, reached through a hook the generic skill declares, with an outcome for when there is none. A skill named for its context holds the smallest piece that must be specific, and states its wiring outright. Platform wiring every user shares may instead be declared in one scope line. Full rule: [CONVENTIONS.md](../../CONVENTIONS.md#agnostic-by-default).
+
+  **The scope line's form.** It is a sentence: `Works on <platform> through the <tool>.` — for example `Works on GitHub through the \`gh\` CLI.` The script reads it sentence-wise, so it works mid-paragraph as well as on its own line. What the sentence names is exempt from check 3, and a host it names is exempt from check 6; nothing else is.
+- **6. A declared endpoint is wiring, not leaked data.** A skill whose purpose is to drive one service must be able to name that service. Three things are therefore not findings: the host of a **"Base URL" declaration** in the skill's own docs, a host a **scope line** names, and a link to the **platform's published documentation** (a `docs.`/`developer(s).`/`support.`/`help.`/`changelog.` host, or a `/docs`, `/reference`, `/changelog`, `/help`, `/support` path). Everything else — a real customer's host, a person's address, a subject line — is still a finding, and the reserved placeholders (`example.com`, `.test`, `.invalid`) are never flagged.
+- **12. A dependency the doc names is an accurate claim.** The check reads what the scripts import and what the docs say. It fires when a third-party import is not in the docs, or when a doc claims stdlib-only while a script imports something else. A doc that states its third-party package precisely **and** notes that everything else is standard library is correct, and is not flagged for the package it just declared.
+- **12. One finding per shared module.** Several scripts importing one sibling helper produce a single finding naming the module and the files, not one row per importer.
+- **10. Quote the evidence that triggered it.** When the trigger is a network call in a script, the finding names the call rather than whichever doc line happened to match a keyword first.
 - **5. Two tests.** Anything the method names or asks the reader to recognise is always loaded. Rationale, full reference tables, illustrative examples and offline-suite notes go behind the gate. Length is judged here, never alone.
 - **6. Invented data is the default.** Reserved domains (`example.com`, `.test`, `.invalid`), obviously fictional names. A sample built from the session in front of you holds real data unless you substitute on purpose.
 - **8. Empty must be unambiguous.** Wherever a tool can return nothing for a reason other than "there was nothing", the doc names the reason and any cap.
@@ -247,6 +253,8 @@ Put these in any report a reader might over-trust.
 4. It does not know the domain. It can tell that a table has no row for an input, not whether that row should exist.
 5. It raises no method gap unless the interrogation is run. Skipping Phase 2 reproduces the failure this skill exists to fix.
 6. It does not measure quality. A skill with no findings is free of these twelve classes, not thereby good.
+7. **The finding count is not comparable across versions of a skill.** Adding documentation — links, samples, a reference table, an endpoint list — *raises* the count, because each addition is a new surface the checks can see. Compare findings, never counts, when judging whether an edit helped.
+8. **Check 7 has no selftest coverage.** `--selftest` proves each check fires on a planted defect, but check 7 is judgement-only, so the pass this skill calls its most valuable is also the one part with no automated proof. A clean selftest says nothing about it.
 
 ## Ending
 

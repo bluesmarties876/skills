@@ -828,7 +828,14 @@ PLATFORM_CLIS = ("gh", "glab", "az", "aws", "gcloud", "gsutil", "vercel", "netli
 _CLIS = "|".join(PLATFORM_CLIS)
 CLI_CMD = re.compile(rf"(?:^\s*(?:\$\s+)?|[|;&(]\s*|\$\(\s*|=\s*)({_CLIS})\s+[a-z]")
 CLI_SPAN = re.compile(rf"({_CLIS})\s+[a-z]")
-SCOPE_LINE = re.compile(r"Works (?:on|with) (.+?)\.$")
+SCOPE_LINE = re.compile(r"Works (?:on|with) (.+)\.")
+# A host the skill declares as the API it drives ("Base URL: https://api.x.com/v1").
+# That is the skill's purpose, not a context leak: it is the address every user of
+# the skill must send to, so it is not a value that differs per installation.
+BASE_URL_DECL = re.compile(r"base url[^:]*:\s*`?https?://([A-Za-z0-9.-]+)", re.I)
+DOC_HOST_LABELS = {"docs", "developer", "developers", "support", "help", "changelog"}
+DOC_PATH = re.compile(r"/(?:docs|reference|changelog|help|support)(?:/|$)", re.I)
+URL_HOST = re.compile(r"\b((?:[a-z0-9-]+\.)+[a-z]{2,})\b", re.I)
 MIN_PIECE_WORDS = 300  # a context-named skill shorter than this is not judged for size
 MIN_SPECIFICS_PER_100 = 1.0  # below this, a context-named skill may be more than the smallest piece
 
@@ -936,12 +943,30 @@ def collect_specifics(s):
             if not scoped & set(re.split(r"[^a-z0-9]+", k[1].lower()))}
 
 
+def scope_hosts(s):
+    """Hosts a scope line names outright ("Works on api.example.com ...")."""
+    out = set()
+    for n, sent in s.main.sentences():
+        if n in s.main.code_lines:
+            continue
+        m = SCOPE_LINE.search(sent)
+        if m:
+            out |= {h.lower().rstrip(".") for h in URL_HOST.findall(m.group(1))}
+    return out
+
+
 def scope_words(s):
     """Words a scope line names ("Works on GitHub through the `gh` CLI."): the
-    platform wiring every user shares, declared rather than leaked."""
+    platform wiring every user shares, declared rather than leaked.
+
+    Read sentence-wise, not line-wise: a scope line is a sentence, and it is
+    routinely written mid-paragraph rather than alone on its own line.
+    """
     out = set()
-    for n, line in enumerate(s.main.lines, 1):
-        m = SCOPE_LINE.match(line.strip()) if n not in s.main.code_lines else None
+    for n, sent in s.main.sentences():
+        if n in s.main.code_lines:
+            continue
+        m = SCOPE_LINE.search(sent)
         if m:
             out |= {w for w in re.split(r"[^a-z0-9]+", m.group(1).lower()) if len(w) >= 2} - {"the", "cli", "its",
                                                                                             "api", "through"}
@@ -1238,9 +1263,48 @@ def find_real_data(s, ctx):
     return found
 
 
+def declared_base_hosts(s):
+    """Hosts the skill declares as the API it drives, in its own docs.
+
+    A skill whose whole purpose is to talk to one service must be able to name
+    that service's public host. Check 3 already exempts a platform a scope line
+    names; this is the same exemption for a "Base URL" declaration, so check 6
+    does not report the skill's own endpoint as leaked customer data.
+    """
+    out = set()
+    for d in s.docs:
+        for line in d.lines:
+            for m in BASE_URL_DECL.finditer(line):
+                out.add(m.group(1).lower())
+    return out
+
+
+def is_doc_url(url):
+    """A link to the platform's own documentation, not leaked customer data.
+
+    A skill that drives one service should be able to point at that service's
+    published reference. That is wiring every user shares, the same category a
+    scope line declares - not a value that ties the skill to one installation.
+    """
+    m = URL.match(url)
+    if not m:
+        return False
+    host = m.group(1).lower()
+    if host.split(".")[0] in DOC_HOST_LABELS:
+        return True
+    return bool(DOC_PATH.search(url[m.end(1):]))
+
+
 def check_real_data(s, ctx):
     out = []
+    base_hosts = declared_base_hosts(s) | {h for h in scope_hosts(s) if "." in h}
     for (kind, _), (where, count, certain, value) in ctx["real_data"].items():
+        if kind == "address":
+            m = URL.match(value)
+            if m and m.group(1).lower() in base_hosts:
+                continue  # the skill's own declared API host, not leaked data
+            if is_doc_url(value):
+                continue  # a link to the platform's published documentation
         out.append(finding(6, where, f"{kind} `{mask(value)}`, {count}×. Replace it with invented data "
                                      "(reserved domains such as example.com, obviously fictional names).",
                            certain=certain))
@@ -1371,9 +1435,20 @@ def check_safety(s, ctx):
                                   "presence check missed it)")
         return []
     statements = [(d, n) for d in s.docs + s.shared for n, line in enumerate(d.lines, 1) if SAFETY.search(line)]
-    first = loc(doc_hits[0][0], doc_hits[0][1]) if doc_hits else code_hits[0]
     if not statements:
-        example = f"\"{q(doc_hits[0][2])}\"" if doc_hits else f"network calls in {code_hits[0]}"
+        # Quote the evidence that actually triggered the check. A doc line may
+        # merely mention the word "webhooks" or "fetch"; when the trigger is a
+        # network call in a script, that is what the reader needs to see, not
+        # whichever doc line happened to match first.
+        if code_hits and not doc_hits:
+            first = code_hits[0]
+            example = f"network calls in {code_hits[0]}"
+        elif code_hits:
+            first = loc(doc_hits[0][0], doc_hits[0][1])
+            example = f"\"{q(doc_hits[0][2])}\", and network calls in {code_hits[0]}"
+        else:
+            first = loc(doc_hits[0][0], doc_hits[0][1])
+            example = f"\"{q(doc_hits[0][2])}\""
         return [finding(10, first, f"ingests outside content ({example}) and nowhere says it is data, not "
                                    "instruction.", certain=bool(code_hits) or len(doc_hits) >= 2)]
     out = []
@@ -1537,6 +1612,7 @@ def check_runnability(s, ctx):
     info = {fn: argparse_info(tree) for fn, (tree, _) in parsed.items() if tree}
     reported = set()
     repo_files = []
+    sibling_hits = {}
     for d, n, path, rest in doc_commands(s):
         base = Path(path).name
         same = [fn for fn in s.scripts if Path(fn).name == base]
@@ -1632,13 +1708,18 @@ def check_runnability(s, ctx):
                     node.func.attr in ("insert", "append") and ast.dump(node.func.value).count("'path'"):
                 dynamic.append(f"sys.path.{node.func.attr} (line {node.lineno})")
         for t in sorted(third):
+            # A dependency the docs actually name is an accurate claim, whatever
+            # else the doc says about stdlib. Without this, a doc that states its
+            # third-party package precisely AND notes that everything else is
+            # stdlib is flagged for the package it just declared.
+            if t in docs:
+                continue
             if STDLIB_CLAIM.search(docs):
                 out.append(finding(12, fn, f"imports `{t}`, but the docs say standard library only.", certain=True))
-            elif t not in docs:
+            else:
                 out.append(finding(12, fn, f"imports `{t}`, which no doc lists as a dependency.", certain=True))
         for t in sorted(sib):
-            out.append(finding(12, fn, f"imports the sibling module `{t}`. A copy of this script alone will not "
-                                       "run; say so, or make it self-contained."))
+            sibling_hits.setdefault(t, []).append(fn)
         if dynamic:
             out.append(finding(12, fn, f"loads code at runtime ({', '.join(dynamic)}). Prove it is self-contained "
                                        "by running it from an empty directory."))
@@ -1648,6 +1729,14 @@ def check_runnability(s, ctx):
             if declared < est:
                 out.append(finding(12, fn, f"the docs say Python 3.{declared}, but the script's syntax first parses "
                                            f"under 3.{est}."))
+    # One finding per shared sibling module, not one per importing file. A doc
+    # cannot pre-empt these (the check reads filenames, not prose), so eleven
+    # scripts sharing one helper would otherwise produce eleven identical rows.
+    for mod, users in sorted(sibling_hits.items()):
+        named = ", ".join(sorted(users))
+        out.append(finding(12, users[0], f"{len(users)} scripts import the sibling module `{mod}` "
+                                         f"({named}). None of them runs as a copy on its own; say so, or make "
+                                         "them self-contained."))
     return out
 
 
@@ -1988,10 +2077,17 @@ def write_files(root, files):
         p.write_text(text, encoding="utf-8")
 
 
-def load_files(files, real_values=(), name="tidy-notes", contexts=()):
+def load_files(files, real_values=(), name="tidy-notes", contexts=(), docs=()):
+    """Analyze a fixture skill. `docs` are extra doc files written alongside it,
+    so a test can supply the "Base URL" declaration that check 6 exempts."""
     with tempfile.TemporaryDirectory() as tmp:
         write_files(Path(tmp, name), files)
-        return analyze(load_folder(Path(tmp, name)), real_values, contexts=contexts)
+        root = Path(tmp, name)
+        for rel, text in docs:
+            p = root / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8")
+        return analyze(load_folder(root), real_values, contexts=contexts)
 
 
 def sweep_files(skills, contexts=()):
@@ -2092,6 +2188,63 @@ def selftest():
     files["SKILL.md"] = re.sub(r"A `--json` run prints.*?```json\n.*?```\n", "", files["SKILL.md"], flags=re.S)
     files["SKILL.md"] += "\nWorks on GitHub through the `gh` CLI.\n\n```\ngh repo view --json name\n```\n"
     check(not has(11, load_files(files)), "no check 11 findings: another tool's `--json` is not the skill's")
+
+    # --- the four check defects found on 17 Oct 2026 ------------------------
+    # 1. check 6 flagged a skill's own declared API host as leaked customer data.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += "\n## Notes API\n\n- **Base URL**: `https://notes.northwind-ops.com/v1`.\n"
+    r = load_files(files)
+    check(not has(6, r), "no check 6 findings: the skill's own declared base URL is not leaked data")
+    # ...but an unrelated customer host in a sample still is.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += "\n```\nfrom: ops@northwind-ops.com\n```\n"
+    check(has(6, load_files(files)), "check 6 fires: a real address that is not the declared base URL")
+
+    # 2. check 6 flagged the platform's published documentation links.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += ("\n- API reference: https://docs.northwind-ops.com/reference\n"
+                          "- Changelog: https://changelog.northwind-ops.com/\n")
+    check(not has(6, load_files(files)), "no check 6 findings: links to the platform's own docs are not leaked data")
+
+    # 3. check 6 did not honour a scope line that names a host.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += "\nWorks on notes.northwind-ops.com through its REST API.\n"
+    check(not has(6, load_files(files)), "no check 6 findings: a host a scope line names is declared, not leaked")
+
+    # 4. a scope line was only read when it sat alone on its own line.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += "\nNotes are filed on GitHub. Works on GitHub through the `gh` CLI.\n"
+    check(not has3(load_files(files)), "no check 3 findings: a scope line mid-paragraph still counts")
+
+    # 5. check 12 flagged a dependency the doc had just declared accurately.
+    files = copy.deepcopy(CLEAN)
+    files["scripts/tidy.py"] = files["scripts/tidy.py"].replace("import json\n", "import json\nimport yaml\n")
+    files["SKILL.md"] = files["SKILL.md"].replace(
+        "It needs Python 3.9 or later and the standard library only.",
+        "It needs Python 3.9 or later. One third-party package: `yaml` (`pip install pyyaml`). "
+        "Everything else is the standard library.")
+    check(not has(12, load_files(files)),
+          "no check 12 findings: a third-party dependency the doc names is not a stdlib contradiction")
+
+    # 6. check 12 repeated one sibling-import finding per importing file.
+    files = copy.deepcopy(CLEAN)
+    files["scripts/helper.py"] = "VALUE = 1\n"
+    for extra in ("a", "b", "c"):
+        files[f"scripts/{extra}.py"] = ("import argparse\nimport sys\nfrom helper import VALUE\n\n\n"
+                                        "def main():\n    return VALUE\n")
+    r = load_files(files)
+    sib = [f for f in r["findings"] if f["check"] == 12 and "sibling module" in f["message"]]
+    check(len(sib) == 1, f"check 12 collapses sibling-import findings to one (got {len(sib)})")
+
+    # 7. check 10 quoted a doc line when the trigger was a network call in code.
+    files = copy.deepcopy(CLEAN)
+    files["scripts/tidy.py"] = files["scripts/tidy.py"].replace("import sys\n", "import sys\nimport urllib.request\n")
+    files["SKILL.md"] = files["SKILL.md"].replace("## Running it", "## Inbox\n\nNotes are fetched from a shared "
+                                                                  "inbox.\n\n## Running it")
+    r = load_files(files)
+    hit = next((f for f in r["findings"] if f["check"] == 10), None)
+    check(hit is not None and "network calls" in hit["message"],
+          "check 10 names the network call when the code is what triggered it")
 
     files = copy.deepcopy(CLEAN)
     files["SKILL.md"] += "\nNotes arrive from `Northwind/notes` and `infra/sync/notes.yml`, through NoteSyncer.\n"
