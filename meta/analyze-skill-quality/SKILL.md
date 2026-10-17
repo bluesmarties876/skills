@@ -1,11 +1,11 @@
 ---
-name: analyse-skill-quality
-description: Analyses another skill's documentation, metadata and decision model, and reports what is wrong with it, ranked by consequence. A documentation pass asks whether an agent can follow the skill without guessing; a method pass asks whether every input that will occur has a defined outcome, verified against the skill's code. Use when reviewing a skill, before shipping a skill others will install, or to sweep a folder of skills for recurring defects.
+name: analyze-skill-quality
+description: Analyzes another skill's documentation, metadata and decision model, and reports what is wrong with it, ranked by consequence. A documentation pass asks whether an agent can follow the skill without guessing; a method pass asks whether every input that will occur has a defined outcome, verified against the skill's code. Use when reviewing a skill, before shipping a skill others will install, or to sweep a folder of skills for recurring defects.
 ---
 
-# Analyse skill quality
+# Analyze skill quality
 
-Analyses **another skill** (its documentation, metadata and scripts) and reports what is wrong with it. Two passes, because they answer different questions:
+Analyzes **another skill** (its documentation, metadata and scripts) and reports what is wrong with it. Two passes, because they answer different questions:
 
 - **Documentation pass.** Can an agent follow this as written without guessing? Mostly mechanical; a script finds the candidates.
 - **Method pass.** Does the decision model have a defined outcome for every input that will actually occur? Judgement-led, and the pass that finds real code defects.
@@ -51,14 +51,14 @@ The script never runs the target's code, and masks every value check 6 flags whe
 
 ## Running the script
 
-The script is `scripts/analyse.py` in this skill's folder. It needs Python 3.9 or later and the standard library only, and imports nothing from beside it, so a copy of the one file runs anywhere. If it is missing, get the whole skill folder again rather than rewriting it.
+The script is `scripts/analyze.py` in this skill's folder. It needs Python 3.9 or later and the standard library only, and imports nothing from beside it, so a copy of the one file runs anywhere. If it is missing, get the whole skill folder again rather than rewriting it.
 
 ```
-python3 scripts/analyse.py path/to/skill
-python3 scripts/analyse.py path/to/skill --real-values values.txt
-python3 scripts/analyse.py path/to/skills-folder --json
-python3 scripts/analyse.py --selftest
-python3 scripts/analyse.py --fixture /tmp/demo-skill
+python3 scripts/analyze.py path/to/skill
+python3 scripts/analyze.py path/to/skill --real-values values.txt
+python3 scripts/analyze.py path/to/skills-folder --json
+python3 scripts/analyze.py --selftest
+python3 scripts/analyze.py --fixture /tmp/demo-skill
 ```
 
 | Flag | Meaning |
@@ -74,7 +74,7 @@ python3 scripts/analyse.py --fixture /tmp/demo-skill
 
 Run `--selftest` once in any new environment. It ends `PASS: 0 failing`; anything else means the checks cannot be trusted, so stop with `BLOCKED`.
 
-Exit 0 means analysed, or the selftest passed; findings are not a failure. Exit 1 means the selftest failed. Exit 2 means bad usage or unreadable input; stderr names the problem, so fix the input and run again.
+Exit 0 means analyzed, or the selftest passed; findings are not a failure. Exit 1 means the selftest failed. Exit 2 means bad usage or unreadable input; stderr names the problem, so fix the input and run again.
 
 ### The output, trimmed
 
@@ -130,7 +130,7 @@ Grouped by how they are found. Worked instances are in reference.md.
 Rules for the judgement halves, so they are not argued afresh each run:
 
 - **1. Read for pairs.** Five shapes: claim against claim, metadata against body, sample against sample, scope claim against content, promise against procedure. The last is the sharpest ("every item" with no pagination loop), and its fix is usually in the code.
-- **3. Agnostic, or named and minimal.** A value belongs in the context's agent instructions. An opinionated procedure belongs in a companion skill named `<context>-<skill>-<piece>`, reached through a hook the generic skill declares, with an outcome for when there is none. A skill named for its context holds the smallest piece that must be specific, and states its wiring outright. Platform wiring every user shares may instead be declared in one scope line. Full rule: [CONVENTIONS.md](../CONVENTIONS.md#agnostic-by-default).
+- **3. Agnostic, or named and minimal.** A value belongs in the context's agent instructions. An opinionated procedure belongs in a companion skill named `<context>-<skill>-<piece>`, reached through a hook the generic skill declares, with an outcome for when there is none. A skill named for its context holds the smallest piece that must be specific, and states its wiring outright. Platform wiring every user shares may instead be declared in one scope line. Full rule: [CONVENTIONS.md](../../CONVENTIONS.md#agnostic-by-default).
 - **5. Two tests.** Anything the method names or asks the reader to recognise is always loaded. Rationale, full reference tables, illustrative examples and offline-suite notes go behind the gate. Length is judged here, never alone.
 - **6. Invented data is the default.** Reserved domains (`example.com`, `.test`, `.invalid`), obviously fictional names. A sample built from the session in front of you holds real data unless you substitute on purpose.
 - **8. Empty must be unambiguous.** Wherever a tool can return nothing for a reason other than "there was nothing", the doc names the reason and any cap.

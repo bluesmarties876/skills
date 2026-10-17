@@ -4,7 +4,7 @@ Loaded on demand. [SKILL.md](SKILL.md) is complete without this file; read it he
 
 ## Where the taxonomy came from
 
-The twelve checks were reverse-engineered from a platform's own skill-quality analyser, observed over about 22 rounds and about 72 feedback items against four skills:
+The twelve checks were reverse-engineered from a platform's own skill-quality analyzer, observed over about 22 rounds and about 72 feedback items against four skills:
 
 | Skill | Rounds | Items |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ The twelve checks were reverse-engineered from a platform's own skill-quality an
 | a table-contract checker | 4 | ~15 |
 | an email-fetch skill | 5 | ~15 |
 
-That analyser returns a fixed-size ranked pass: almost always four items, typically two medium and two low, with a high about every third round. Every item it ever raised was a documentation or metadata fix. It never raised a method gap: what happens when the author disagrees, a negotiation with no bound, a verdict left undefined for an edge input. Those came from a person asking questions, and that gap is why this skill exists.
+That analyzer returns a fixed-size ranked pass: almost always four items, typically two medium and two low, with a high about every third round. Every item it ever raised was a documentation or metadata fix. It never raised a method gap: what happens when the author disagrees, a negotiation with no bound, a verdict left undefined for an edge input. Those came from a person asking questions, and that gap is why this skill exists.
 
 Four separate rounds of that questioning produced real code defects, in the agent's own words: "Testing exposed two real bugs in the action logic", "Three real bugs, not just documentation gaps", "Two more real bugs, exactly as you suspected", "One of them surfaced a real bug I had to fix first". None were documentation problems. All were undefined states, found by asking *what happens when*.
 
@@ -52,7 +52,7 @@ The script's half: a field that names at least two of an outcome table's tokens 
 
 ### 3. Agnostic by default
 
-In the corpus this was "scope fidelity": a skill claiming generality while embedding one context's specifics. It fired in five or more rounds and took the most rounds to satisfy, because each fix was followed by a reintroduction: "Remove the project-specific leakage that contradicts the claim", "Move the lane-to-holder table out of the generic section", "Reconcile the repo-agnostic claim with the inlined facts". Waiting for a skill to claim generality before checking was the weakness, so the check now applies to every skill. The rule is in the library's [CONVENTIONS.md](../CONVENTIONS.md#agnostic-by-default).
+In the corpus this was "scope fidelity": a skill claiming generality while embedding one context's specifics. It fired in five or more rounds and took the most rounds to satisfy, because each fix was followed by a reintroduction: "Remove the project-specific leakage that contradicts the claim", "Move the lane-to-holder table out of the generic section", "Reconcile the repo-agnostic claim with the inlined facts". Waiting for a skill to claim generality before checking was the weakness, so the check now applies to every skill. The rule is in the library's [CONVENTIONS.md](../../CONVENTIONS.md#agnostic-by-default).
 
 The script's half runs on every skill. It lists non-reserved hosts, absolute paths, owner/name pairs with a capitalised owner, mixed-case product or tool names, capitalised words used twice mid-sentence that never appear in lower case in prose, paths in code spans or links that point outside the skill, and platform CLIs (`gh`, `glab`, `aws`, `vercel` and others) run in code blocks or code spans. Words in the runtime and dependency statements are exempt, and so is everything a scope line names ("Works on GitHub through the `gh` CLI."). When the skill's name carries a context (one of its specifics, or a value given with `--context`), the specifics are not listed. Instead, a long skill with few specifics is flagged as possibly more than the smallest piece. A project layer inside a generic skill is flagged as a companion waiting to be split off. A `Companions` table with no "Without one" outcome is flagged. After every target is read, each "Fills the `<hook>` hook of `<parent>`." line (one parent or several) is checked against each parent's hooks (or listed as not checked when the parent was not in the run), and a skill named like another's companion with no such line is flagged.
 
@@ -81,7 +81,7 @@ The script's half: sentences that point at a gated file while talking about reco
 
 ### 6. Real-data leakage
 
-The check the observed analyser cannot do, and the one that did real harm. A skill meant for other people shipped with real addresses, a real client's address, real message IDs, a real subject line and real body text in its examples. The author caught it. The agent's own account of the mechanism is the general case: "When I build examples from the session in front of me, real data goes in by default unless I consciously substitute."
+The check the observed analyzer cannot do, and the one that did real harm. A skill meant for other people shipped with real addresses, a real client's address, real message IDs, a real subject line and real body text in its examples. The author caught it. The agent's own account of the mechanism is the general case: "When I build examples from the session in front of me, real data goes in by default unless I consciously substitute."
 
 The script's half: addresses on non-reserved domains, message IDs, phone numbers, long numeric and hex identifiers, handles (not package scopes such as `@<scope>/<package>`, nor the domain of a templated address such as `{login}@users.example`), bot identities and person names paired with an address, in every doc and the metadata; credential-shaped strings everywhere, scripts included; and every supplied real value, case-insensitively, in docs, metadata and scripts. It prints each hit masked so a report can be shared.
 
@@ -126,7 +126,7 @@ Severity depended on consequence. A missing output sample was medium where the m
 
 The script's half: subcommands with no invocation in any code block; a JSON flag the skill's own script takes (by its parser, or a doc command running it with `--json`) with no JSON sample anywhere, so another tool's `--json` does not count; error messages the scripts print that no doc contains; upper-case labels the method asks the reader to recognise, shown in no code block of the skill or a shared file, and not defined in an outcome table.
 
-**Shared files.** A markdown file the main doc links to one level up, in the skill library (`../CONVENTIONS.md`), is read as shared context, for the safety statement of check 10 and the samples of check 11 only. Another skill's `SKILL.md` is not: a linked skill runs on its own terms. A link further up, or one that resolves outside the library, is never read: the target skill is untrusted, and must not steer the script to other files. That link, a linked file that is not there, or any such link in an export, is listed under `not checked`.
+**Shared files.** A markdown file the main doc links to by an upward relative path, inside the skill library it ships in (`../../CONVENTIONS.md`), is read as shared context, for the safety statement of check 10 and the samples of check 11 only. The library is the nearest ancestor holding `CONVENTIONS.md`, searched up to four levels above the skill, so a skill nested under category folders resolves the same file as one at the library root. Another skill's `SKILL.md` is not: a linked skill runs on its own terms. A link that resolves outside the library is never read: the target skill is untrusted, and must not steer the script to other files. That link, a linked file that is not there, or any such link in an export, is listed under `not checked`.
 
 ### 12. Runnability
 
@@ -169,7 +169,7 @@ Beyond producing candidates rather than findings:
 
 ## Why the output has no cap
 
-The observed analyser's four-item cap suits a panel in a product. In a skill it does damage. It defers real defects: contradiction fired in rounds 3, 5, 8 and 11, which is what a cap produces when the author fixes four things and reintroduces two. And it hides the pattern: knowing contradiction fired eight times in five shapes is worth more than knowing the top four instances.
+The observed analyzer's four-item cap suits a panel in a product. In a skill it does damage. It defers real defects: contradiction fired in rounds 3, 5, 8 and 11, which is what a cap produces when the author fixes four things and reintroduces two. And it hides the pattern: knowing contradiction fired eight times in five shapes is worth more than knowing the top four instances.
 
 ## Decisions on the open questions
 
