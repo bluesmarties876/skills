@@ -1708,6 +1708,21 @@ def doc_commands(s):
                     yield d, n, m.group(1), m.group(2)
 
 
+def sibling_declared(s, base):
+    """True when the doc says where a script outside this skill lives.
+
+    A script named as belonging to another skill is a declaration, not a
+    runnability defect: the reader is told which skill to fetch it from, which is
+    the same standing the rule already gives a dependency the doc names. Without
+    this, every cross-skill call the docs spell out is reported as unrunnable.
+    """
+    for d in s.docs:
+        for _line, sent in d.sentences():
+            if base in sent and re.search(r"\bskills?\b", sent, re.I):
+                return True
+    return False
+
+
 def check_runnability(s, ctx):
     out = []
     if not s.scripts:
@@ -1731,6 +1746,12 @@ def check_runnability(s, ctx):
             reported.add(base)
             if ctx["context"]:
                 repo_files.append(path)
+            elif sibling_declared(s, base):
+                # Placed by the doc, so it is a declaration rather than a defect.
+                # Nothing is recorded: `sibling_hits` below means module ->
+                # importing filenames, and a bare string stored there would be
+                # read as a filename list and iterated character by character.
+                continue
             else:
                 out.append(finding(12, loc(d, n), f"`{path}` is not in the skill. The command is not runnable as "
                                                   "written.", certain=True))
@@ -2469,6 +2490,25 @@ def selftest():
     hit = next((f for f in r["findings"] if f["check"] == 10), None)
     check(hit is not None and "network calls" in hit["message"],
           "check 10 names the network call when the code is what triggered it")
+
+    # 8. a script named as belonging to another skill was reported as unrunnable,
+    # because the command named a file this skill does not ship. A declaration of
+    # where it lives is the same standing as a dependency the doc names.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += ("\n## Handing it over\n\nThe commit is made by `github-api`'s "
+                          "`commit_files.py`, which lives in that skill's folder.\n\n"
+                          "```\npython3 commit_files.py --manifest /tmp/m.json\n```\n")
+    bad = [f for f in load_files(files)["findings"]
+           if f["check"] == 12 and "is not in the skill" in f["message"]]
+    check(not bad, "no check 12 findings: a script the doc places in another skill is declared"
+          + ("" if not bad else f" (got {[f['message'][:70] for f in bad]})"))
+
+    # ...but an unplaced script of the same name is still caught, so the fix did not blind it.
+    files = copy.deepcopy(CLEAN)
+    files["SKILL.md"] += "\n```\npython3 commit_files.py --manifest /tmp/m.json\n```\n"
+    bad = [f for f in load_files(files)["findings"]
+           if f["check"] == 12 and "is not in the skill" in f["message"]]
+    check(bool(bad), "check 12 fires: a script the doc never places anywhere")
 
     files = copy.deepcopy(CLEAN)
     files["SKILL.md"] += "\nNotes arrive from `Northwind/notes` and `infra/sync/notes.yml`, through NoteSyncer.\n"
