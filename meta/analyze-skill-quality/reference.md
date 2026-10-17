@@ -193,6 +193,8 @@ Beyond producing candidates rather than findings:
 
 - It reads markdown and scripts ending `.py`, `.sh`, `.js`, `.mjs`, `.cjs`, `.ts`, `.rb` or `.pl`. Other files are listed under `not checked`, never silently dropped.
 - Subcommand, flag, import, syntax and cap checks understand Python and its standard argument parser. Other languages get the regex cap check and the command-resolution check only.
+- A nested CLI resolves one subcommand per level, the way argparse does, so `cli.py tasks list --flag` is checked against the `list` parser and not the `tasks` group. A group also accepts its descendants' flags. The path is followed through the variable bindings in source order, so it survives the usual habit of reusing one variable for each sibling parser (`t = tsub.add_parser("list")` … `t = tsub.add_parser("get")`). A subcommand name assembled at run time (from a list, a loop or a format string) is not followed, and a group whose actions are added through a helper function is resolved no deeper than the calls that appear in the file.
+- A command whose subcommand token is a placeholder (`<name>`, `$VAR`, `{id}`, `…`, `...`) is checked against every flag in the script, since the reader is supplying the subcommand.
 - Frontmatter: flat keys, quoted values, block scalars and lists. Nested maps are read as text.
 - The Python floor it estimates comes from syntax alone, not from library calls.
 - Thresholds: quoted sentences are cut at 160 characters; repeated runs under 40 words are not reported; code blocks over 40 lines and more than 8 tags are raised; numeric caps under 10 are ignored; a context-named skill is judged for size only at 300 words or more, and raised when it has fewer than 1 specific per 100 words.
