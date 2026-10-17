@@ -13,19 +13,11 @@ The value of this skill is that it works on a platform it has never seen. It is 
 happens to exist, so the same procedure serves Motion today and Monday, ClickUp, Asana
 or Linear next month without a line changing.
 
-## Where the script lives
+## The script
 
-Call `FetchSkillScripts("infer-project")` first. It returns a `scriptPaths` list — **use
-that path**, because the directory name is derived from the skill name and is not
-guaranteed to match it. In this repository the script sits under `scripts/`:
-
-```
-project-management/infer-project/scripts/infer_project_tools.py
-```
-
-The script is standard library only, needs **no credentials**, and makes no network
-calls — it works on JSON you have already fetched. Run it with a plain shell command,
-never `RunWithCredentials`.
+`scripts/infer_project_tools.py` sits beside this file. Standard library only, needs
+**no credentials**, and makes no network calls — it works on JSON you have already
+fetched. Run it with a plain shell command, never `RunWithCredentials`.
 
 ## When to use it
 

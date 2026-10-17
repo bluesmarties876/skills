@@ -12,18 +12,11 @@ The whole value of this skill is what it *doesn't* return. The answer is the nam
 nothing else: no commentary on the input, no summary of what changed, no offers to help
 further. A user handing over seven descriptions wants seven names back.
 
-## Where the script lives
+## The script
 
-Call `FetchSkillScripts("normalize-task-name")` first. It returns a `scriptPaths` list —
-**use that path**, because the directory name is derived from the skill name and is not
-guaranteed to match it. In this repository the script sits under `scripts/`:
-
-```
-project-management/normalize-task-name/scripts/normalize_task_name.py
-```
-
-The script is standard library only, needs **no credentials**, and makes no network
-calls. Run it with a plain shell command — never `RunWithCredentials`.
+`scripts/normalize_task_name.py` sits beside this file. Standard library only, needs
+**no credentials**, and makes no network calls. Run it with a plain shell command —
+never `RunWithCredentials`.
 
 ## When to use it
 
