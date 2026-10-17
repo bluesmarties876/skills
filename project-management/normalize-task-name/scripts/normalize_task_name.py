@@ -14,7 +14,7 @@ Usage:
     python3 normalize_task_name.py check --pairs pairs.json
     python3 normalize_task_name.py check --pairs pairs.tsv --json
     python3 normalize_task_name.py check --stdin
-    python3 normalize_task_name.py check --strict --target 4 "Load A/W offer"
+    python3 normalize_task_name.py check --strict --target 4 "Load spring offer"
 
 Exit codes: 0 = nothing failed, 1 = at least one failure (or any warning under
 --strict), 2 = usage error.
@@ -474,7 +474,7 @@ def check_case(name: str, out: list) -> None:
                                f"case — use sentence case"))
         # 2. Nearly every mid-name word capitalised, with no function word to catch.
         #    Ordinary prose carrying a proper noun sits well below this bar
-        #    ("Send Travel with Anita recording" is 2 of 4).
+        #    ("Send onboarding call recording" is 2 of 4).
         elif len(capitalised) >= 3 and len(capitalised) / len(tail) >= 0.8:
             out.append(Finding(R_CASE, "warn",
                                "this reads as title case — use sentence case"))
