@@ -74,7 +74,9 @@ no table, no "here are your names", no note about what was shortened.
 
 The one thing worth breaking that rule for: if a shortening genuinely loses something the
 user would want to know about — a dropped proper noun, an ambiguity between two similar
-tasks — say so in a single short line after the list. Never more than that.
+tasks — say so in a single short line after the list. Never more than that. The three
+things under "Deliberately out of scope" are not exceptions to this: a note about what a
+name *lost* is allowed, a note about what you *chose to cut* is not.
 
 ## The validator script
 
@@ -85,12 +87,17 @@ on a long batch.
 It is standard library only, needs no credentials, and makes no network calls.
 
 ```
-python3 normalize_task_name.py check "Add newsletter images to denim course"
-python3 normalize_task_name.py check -o "<the verbose original>" "<proposed name>"
-python3 normalize_task_name.py check --pairs pairs.tsv
-python3 normalize_task_name.py check --stdin
-python3 normalize_task_name.py check --json --strict "Load A/W offer"
+python3 scripts/normalize_task_name.py check "Add newsletter images to denim course"
+python3 scripts/normalize_task_name.py check -o "<the verbose original>" "<proposed name>"
+python3 scripts/normalize_task_name.py check --pairs pairs.tsv
+python3 scripts/normalize_task_name.py check --stdin
+python3 scripts/normalize_task_name.py check --json --strict "Load A/W offer"
 ```
+
+All five paths are relative to this skill's folder, which is where you are when you
+follow them. Invoking the script without the `scripts/` prefix fails with a can't-open-file
+error and prints nothing on stdout, which reads like a clean run — so if a check comes back
+empty, confirm the path before believing it.
 
 | Flag | Meaning |
 |---|---|
@@ -104,7 +111,9 @@ python3 normalize_task_name.py check --json --strict "Load A/W offer"
 | `--ceiling N` | Word-count ceiling, default 8 |
 
 Exit codes: `0` clean, `1` at least one failure (or any warning under `--strict`), `2`
-usage error.
+usage error. An input the tool cannot use is a usage error, not a crash: a `--pairs`
+path that is missing, unreadable, a directory or not UTF-8 text exits `2` with a named
+message, so `1` always means a name failed rather than a command that never ran.
 
 ### What it checks, and how hard
 
@@ -127,6 +136,14 @@ it and decide, not to rewrite a good name to satisfy the lexicon. Same for `R4`:
 fires when you pass `--original`, and a dropped proper noun is often deliberate ("Send
 denim copy to Anita" legitimately drops "Teachable"). The warning exists to make the
 omission *visible*, not to forbid it.
+
+`R4` reads a sentence's first word differently from the rest, because capitalisation means
+different things in the two positions. Mid-sentence, a capital is proof of a name. First,
+it is just sentence case, so the word is judged only when it is not an ordinary
+description word — which is why an unfamiliar opening word ("Zoë needs the copy sent") is
+reported while an ordinary one ("Customer needs the copy sent") is passed over, and why an
+unrecognised opening word can still be a false positive. `R4` compares whole words, so
+"Ann" is not satisfied by "announcements" in the name.
 
 ### The one check worth always running
 
@@ -151,7 +168,9 @@ Confirmed with the user, so do not add them unasked:
 
 - **No duplicate flagging.** Two tasks that look similar may be genuinely two tasks.
 - **No parent-task suggestions.** Hierarchy is a different decision from naming.
-- **No "what I dropped" notes.** The cut detail is the point, not a loss to report.
+- **No "what I dropped" notes.** The cut detail is the point, not a loss to report. This
+  governs notes about detail you *chose* to trim; it does not override the one-line warning
+  above when a shortening drops a proper noun or creates an ambiguity.
 
 If a user later asks for any of these, that is a different job — do it in the thread
 rather than growing this skill.

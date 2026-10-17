@@ -162,6 +162,22 @@ FUNCTION_WORDS = {
     "if", "when", "while", "because", "since", "until", "unless", "per", "via",
 }
 
+# Ordinary sentence openers that a capitalised start would otherwise turn into a
+# false proper noun. Consulted only for a sentence's first token.
+COMMON_OPENERS = {
+    "please", "kindly", "someone", "somebody", "anyone", "anybody", "everyone",
+    "everybody", "nobody", "customer", "customers", "client", "clients", "team",
+    "user", "users", "people", "staff", "they", "he", "she",
+}
+
+# Words a task description uses ordinarily. A capitalised one of these is
+# sentence capitalisation, not a name. Consulted only for a sentence's first
+# token, where capitalisation on its own proves nothing.
+KNOWN_COMMON = (
+    IMPERATIVE_VERBS | NON_VERB_STARTS | FUNCTION_WORDS | PROPER_STOPWORDS
+    | HARD_FILLER_WORDS | SOFT_FILLER_WORDS | COMMON_OPENERS
+)
+
 WORD_RE = re.compile(r"[A-Za-z][A-Za-z'\u2019\-]*")
 QUOTED_RE = re.compile(r"[\"\u201c\u2018']([^\"\u201d\u2019']{2,60})[\"\u201d\u2019']")
 
@@ -169,6 +185,10 @@ QUOTED_RE = re.compile(r"[\"\u201c\u2018']([^\"\u201d\u2019']{2,60})[\"\u201d\u2
 # --------------------------------------------------------------------------
 # Findings
 # --------------------------------------------------------------------------
+
+class UsageError(Exception):
+    """An input the tool cannot use. Reported as a usage error, exit 2."""
+
 
 @dataclass
 class Finding:
@@ -345,20 +365,30 @@ def check_specificity(original: Optional[str], name: str, out: list) -> None:
         return
 
     name_low = name.lower()
+    name_tokens = {t.lower() for t in WORD_RE.findall(name)}
     reported = set()
 
-    # Proper nouns sitting mid-sentence in the original.
+    # Proper nouns in the original.
+    #
+    # Two tests, because the two positions differ:
+    #   - mid-sentence, a capital proves it is a name (ordinary words are lowercase);
+    #   - first token of a sentence, the capital proves nothing, so the word is
+    #     judged only when it is not an ordinary description word. A lexicon cannot
+    #     be complete, so an unrecognised opening word is reported rather than
+    #     silently trusted — the same direction R1's verb list already takes.
     for sentence in re.split(r"(?<=[.!?])\s+", original.strip()):
         toks = _word_matches(sentence)
         for i, m in enumerate(toks):
-            if i == 0:
-                continue
             tok = m.group()
             if not tok[0].isupper():
                 continue
             if tok.lower() in PROPER_STOPWORDS:
                 continue
-            if tok.lower() in name_low or tok in name:
+            if i == 0 and tok.lower() in KNOWN_COMMON:
+                continue
+            # Token equality, not substring: "Ann" must not be satisfied by
+            # "announcements".
+            if tok.lower() in name_tokens:
                 continue
             if tok.lower() in reported:
                 continue
@@ -487,15 +517,20 @@ def validate(name: str, original: Optional[str] = None,
 
 def load_pairs(path: str) -> list:
     """Read (original, name) pairs from JSON, TSV, or a plain list of names."""
-    with open(path, "r", encoding="utf-8") as fh:
-        raw = fh.read()
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            raw = fh.read()
+    except OSError as exc:
+        raise UsageError(f"error: cannot read {path}: {exc.strerror or exc}")
+    except UnicodeDecodeError:
+        raise UsageError(f"error: {path} is not valid UTF-8 text — is it a binary file?")
 
     stripped = raw.lstrip()
     if stripped.startswith("[") or stripped.startswith("{"):
         try:
             data = json.loads(raw)
         except json.JSONDecodeError as exc:
-            raise SystemExit(f"error: {path} looks like JSON but did not parse: {exc}")
+            raise UsageError(f"error: {path} looks like JSON but did not parse: {exc}")
         if isinstance(data, dict):
             data = data.get("pairs") or data.get("items") or [data]
         pairs = []
@@ -506,10 +541,10 @@ def load_pairs(path: str) -> list:
                 name = row.get("name") or row.get("proposed") or row.get("short")
                 original = row.get("original") or row.get("text") or row.get("verbose")
                 if not name:
-                    raise SystemExit(f"error: a row in {path} has no 'name' field")
+                    raise UsageError(f"error: a row in {path} has no 'name' field")
                 pairs.append((original, name))
             else:
-                raise SystemExit(f"error: unsupported row type in {path}: {type(row).__name__}")
+                raise UsageError(f"error: unsupported row type in {path}: {type(row).__name__}")
         return pairs
 
     pairs = []
@@ -625,4 +660,11 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except UsageError as exc:
+        # An input the tool cannot use is a usage error, and exits 2 — the code
+        # the doc publishes. A traceback is never the answer.
+        print(exc, file=sys.stderr)
+        sys.exit(2)
+
