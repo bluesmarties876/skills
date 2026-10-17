@@ -48,7 +48,7 @@ Fired four or more times.
 
 The auth mismatch recurred in two shapes, declared none but borrowed, and declared a key for values that were plain configuration. Both times the declaration had been set by tooling, not by the author. Tags are the only purely subtractive check in the corpus: fifteen cut to eight, with the redundant three named.
 
-The script's half: a field that names at least two of an outcome table's tokens but not all of them; content words in a field that no doc uses, reported when there are at least three and they are at least a quarter of the field's content words (one or two are usually synonyms, and adverbs ending "-ly" are ignored); more than eight tags, tags sharing a stem, tags the body never uses; a none-like auth value beside three or more credential lines or a credential environment read, or a declared credential beside a "no credentials" sentence. It cannot see synonyms that share no stem.
+The script's half: a field that names at least two of an outcome table's tokens but not all of them; content words in `description` that no doc uses, reported when there are at least three and they are at least a quarter of the field's content words (one or two are usually synonyms, and adverbs ending "-ly" are ignored) — this half does not apply to `whenToUse`, whose job is trigger vocabulary a caller says to reach the skill, not a claim the body should echo; more than eight tags, tags sharing a stem, tags the body never uses; a none-like auth value beside three or more credential lines or a credential environment read, or a declared credential beside a "no credentials" sentence. It cannot see synonyms that share no stem.
 
 ### 3. Agnostic by default
 

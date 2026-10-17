@@ -804,6 +804,14 @@ def check_metadata(s, ctx):
                 out.append(finding(2, f"metadata.{field}",
                                    f"names {len(named)} of the {len(tokens)} outcomes in the table at "
                                    f"{loc(s.main, t['start'])}; missing {', '.join('`%s`' % m for m in missing)}."))
+        # `description` states what the skill IS, so a word the body never uses
+        # is an unbacked claim. `whenToUse` is trigger vocabulary by definition:
+        # "portable", "shareable", "work for anyone" are what a caller says to
+        # reach the skill, and a body has no reason to echo them. Counting those
+        # as unbacked claims is a false positive, so only the outcome-table half
+        # above applies to whenToUse.
+        if field != "description":
+            continue
         content, absent = set(), []
         for w in re.findall(r"[A-Za-z][A-Za-z-]{5,}", text):
             parts = [p for p in w.lower().split("-") if len(p) >= 3]
@@ -2203,6 +2211,10 @@ STILL_CLEAN = [
                     "The `dest` folder is created.\n")),
     ("a description with one word the body never uses", _edit(
         "SKILL.md", "reports what moved.", "reports what moved, including duplicates.")),
+    ("a whenToUse of trigger vocabulary the body never echoes", _edit(
+        "SKILL.md", "name: tidy-notes\n",
+        "name: tidy-notes\nwhenToUse: \"Triggers: make this portable, make it shareable with another "
+        "team, de-personalise it, so it works for anyone.\"\n")),
     ("a platform CLI declared by a scope line", _append(
         "SKILL.md", "\nWorks on GitHub through the `gh` CLI.\n\n```\ngh repo view --json name\n```\n")),
     ("a CLI named but not run", _append("SKILL.md", "\nA host's own CLI, such as `gh`, can read the same notes.\n")),
