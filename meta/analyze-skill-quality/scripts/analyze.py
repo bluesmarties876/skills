@@ -843,9 +843,10 @@ def check_metadata(s, ctx):
                 pairs.append(f"{a} / {b}")
         if pairs:
             out.append(finding(2, "metadata.tags", f"overlapping tags: {', '.join(pairs)}. Keep one of each."))
-        unused = [t for t in tags if not (parts[t] & body_stems)]
-        if unused:
-            out.append(finding(2, "metadata.tags", f"never used in the body: {', '.join(unused)}."))
+        # A tag is retrieval vocabulary a caller says to reach the skill, the same job
+        # `whenToUse` does, so the body-echo half does not apply to it either: someone
+        # searching `sync` needs the tag whether or not the prose uses the word. The
+        # count rule and the overlap rule above carry the subtractive job on their own.
 
     if "auth" not in s.meta:
         ctx["not_checked"].append("2 metadata fidelity: no auth declaration")
@@ -2240,6 +2241,8 @@ STILL_CLEAN = [
         "SKILL.md", "name: tidy-notes\n",
         "name: tidy-notes\nwhenToUse: \"Triggers: make this portable, make it shareable with another "
         "team, de-personalise it, so it works for anyone.\"\n")),
+    ("a tag the body never uses, as retrieval vocabulary", _edit(
+        "SKILL.md", "name: tidy-notes\n", "name: tidy-notes\ntags: [notes, sorting, sync, shareable]\n")),
     ("a platform CLI declared by a scope line", _append(
         "SKILL.md", "\nWorks on GitHub through the `gh` CLI.\n\n```\ngh repo view --json name\n```\n")),
     ("a CLI named but not run", _append("SKILL.md", "\nA host's own CLI, such as `gh`, can read the same notes.\n")),
