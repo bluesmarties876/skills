@@ -379,13 +379,12 @@ of both checks, including the guard's absence where step 2 was skipped. Say plai
 
 ## Files
 
-`scripts/stage_skill.py` and `scripts/verify_write.py` are this skill's two scripts, in
-its folder. Call `FetchSkillScripts` for this skill and use the paths it returns. Both
-need Python 3.9 or later and the standard library only, import nothing from beside each
-other, make no network call and read no credential — so they run under plain `python3`.
-Run `verify_write.py --selftest` after any edit to it; it proves each check fires on a
-planted failure. If either file is missing, fetch the skill folder again rather than
-rewriting it.
+`scripts/stage_skill.py` and `scripts/verify_write.py` are this skill's two scripts,
+beside this file in its folder. Both need Python 3.9 or later and the standard library
+only, import nothing from beside each other, make no network call and read no credential,
+so they run under plain `python3`. Run `verify_write.py --selftest` after any edit to it;
+it proves each check fires on a planted failure. If either file is missing, get the whole
+skill folder from the repo again rather than rewriting it.
 
 `commit_files.py`, `get_file.py`, `get_files.py`, `pr_ops.py` and `repo_browse.py` belong
 to the `github-api` skill and live in its `scripts/` folder. They **do** need a
