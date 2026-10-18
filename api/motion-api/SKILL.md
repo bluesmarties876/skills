@@ -9,7 +9,11 @@ Full client for the Motion (usemotion.com) REST API — all 27 documented endpoi
 tasks, projects, recurring tasks, comments, custom fields, users, workspaces, statuses and
 schedules, plus a `raw` escape hatch for anything not yet documented.
 
-## When to use this skill
+## Scope
+
+*This is source prose, not the retrieval field. When this skill is adopted into a
+workspace, the local `whenToUse` is authored from it — and that field is tuned per
+environment, so it will legitimately read differently from this text.*
 
 Use it whenever the work needs a Motion API call or endpoint: reading or creating tasks,
 listing projects, posting comments on tasks, managing recurring tasks, reading custom
