@@ -309,9 +309,9 @@ a `pointer` tag as proof: it classifies bodies, always.
 
 `unpointed_skills.py` is the only script this skill ships, and it holds no
 judgement. It is **pure**: no network, no credentials, no Hyperagent API, so it is
-safe to run at any point. `FetchSkillScripts` returns its path — use that path,
-since the directory name is derived from the skill name — and the commands below
-run it from there.
+safe to run at any point. It sits in this skill's folder in the repo, beside this
+`SKILL.md` — the resolver lists it — so fetch it from there and run the commands
+below from the directory you put it in.
 
 ```
 python3 unpointed_skills.py inventory --tree-file TREE.json [--json]
@@ -342,5 +342,5 @@ and this family resolves skills by name, never by path. If that rule changes in
 the repo, this must follow it.
 
 It needs Python 3.9 or later and the standard library only, and imports nothing
-from beside it, so a copy of the one file runs anywhere. If it is missing, get
-the whole skill folder again rather than rewriting it.
+from beside it, so a copy of the one file runs anywhere. If it is missing, fetch
+this skill's folder from the repo again rather than rewriting it.
