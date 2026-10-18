@@ -1,6 +1,6 @@
 ---
 name: motion-api
-description: Full client for the Motion (usemotion.com) REST API — all 27 documented endpoints across tasks, projects, recurring tasks, comments, custom fields, users, workspaces, statuses and schedules, plus a raw escape hatch (with cursor pagination) for anything undocumented. Handles X-API-Key auth, cursor pagination, rate-limit backoff, and gates every delete behind an explicit confirmation flag.
+description: The Motion (usemotion.com) REST API client for tasks, projects, recurring tasks, comments, custom fields, users, workspaces, statuses and working-hours schedules — driven through the motion.py CLI, with a raw escape hatch for anything undocumented. Load it whenever a Motion call or endpoint is needed; it carries the X-API-Key auth, cursor pagination, rate-limit backoff and the delete-confirmation gate.
 ---
 
 # Motion API
@@ -11,9 +11,15 @@ schedules, plus a `raw` escape hatch for anything not yet documented.
 
 ## When to use this skill
 
-Use it whenever the work involves Motion: reading or creating tasks, listing projects,
-posting comments on tasks, managing recurring tasks, or reading workspace statuses, users
-and schedules.
+Use it whenever the work needs a Motion API call or endpoint: reading or creating tasks,
+listing projects, posting comments on tasks, managing recurring tasks, reading custom
+fields, users, workspace statuses and working-hours schedules — or anything not yet
+documented, through the `raw` escape hatch.
+
+Everything goes through the `motion.py` CLI, which carries the `X-API-Key` auth, cursor
+pagination, rate-limit backoff and the delete-confirmation gate, so a call works first
+time. This skill is the API client: it makes the call, and does not decide how a task
+should be written, filed or scheduled.
 
 ## Credentials
 
