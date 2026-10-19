@@ -117,11 +117,12 @@ a confident wrong answer later.
    A public repo needs no credential. For a private repo, or to raise the
    60-requests-an-hour unauthenticated limit, borrow `github-api` — it handles
    the token, the branch fallback and the truncation flag. `api.py` is that
-   skill's script, not this one's; `FetchSkillScripts` writes it into
-   `github-api`'s own fetch directory, so run the command from there:
+   skill's script, not this one's: read it out of the repo folder the resolver
+   named (`api/github-api/scripts/`), because the local copy of `github-api` is a
+   pointer holding only a credential anchor, so `FetchSkillScripts` returns the
+   anchor and not `api.py`. Run the command from the directory you put it in:
 
    ```
-   FetchSkillScripts("github-api")
    RunWithCredentials("github-api", "python3 api.py GET /repos/OWNER/REPO/git/trees/REF?recursive=1 --owner OWNER --repo REPO --output /tmp/tree.json")
    ```
 
@@ -165,10 +166,13 @@ For each name:
    python3 create_pointer_skill.py classify --body-file /tmp/bodies/<name>.md --json
    ```
 
-   Fetch that script from `create-pointer-skill` (`FetchSkillScripts`); it is the
-   authority on the thin-versus-verbose distinction, and re-deriving that
-   judgement here is how a second, drifting copy gets made. It exits `0` or `1`;
-   both are normal, so read its JSON regardless of the exit code.
+   That script ships with `create-pointer-skill`, beside its `SKILL.md` in the
+   repo (`meta/create-pointer-skill/scripts/`); fetch it from the repo folder the
+   resolver named, since the local copy of that skill is a pointer and
+   `FetchSkillScripts` returns no scripts for it. It is the authority on the
+   thin-versus-verbose distinction, and re-deriving that judgement here is how a
+   second, drifting copy gets made. It exits `0` or `1`; both are normal, so read
+   its JSON regardless of the exit code.
 4. **On no exact match**, the kind is `absent`. If a local skill exists under a
    related name that looks like a per-instance variant — a repo's `foo` against a
    local `foo-owner/repo` — record that name as `local_name`. Do **not** silently
