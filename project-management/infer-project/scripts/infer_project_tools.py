@@ -18,7 +18,7 @@ Usage:
     python3 infer_project_tools.py extract projects.json
     python3 infer_project_tools.py extract projects.json --json
     python3 infer_project_tools.py extract --stdin < projects.json
-    python3 infer_project_tools.py rank projects.json "Send denim copy to Anita"
+    python3 infer_project_tools.py rank projects.json "Send ceramics copy to Ravi"
     python3 infer_project_tools.py rank projects.json --task-file task.txt --top 5
 """
 
@@ -358,7 +358,7 @@ def _load_projects(args) -> Tuple[str, List[Dict[str, Any]]]:
     """Read the payload and reduce it to a list of normalised projects.
 
     Falls back to plain-string lists, which some platforms return for project
-    names, so a bare `["Denim Course", "Admin"]` is still usable.
+    names, so a bare `["Ceramics Course", "Admin"]` is still usable.
     """
     raw = _read_source(args)
     try:
