@@ -1,6 +1,6 @@
 ---
 name: infer-project
-description: Given a task name or description and a target platform the user names (Motion, Asana, Monday, ClickUp, or anything else), work out which project on that platform the task most likely belongs to. Platform-agnostic by design: it discovers whatever access exists at run time and adapts to that platform's project shape, rather than hardcoding any one tool. Returns a compact table of candidates with confidence and evidence, and asks rather than guessing when the leader is not clearly ahead.
+description: "Work out which project a task belongs to on a task platform the user names (Motion, Asana, Monday, ClickUp, or anything else). Given a task name or description, it answers 'where should this task go' and 'which project does this belong to'. Platform-agnostic by design: it discovers whatever access exists at run time and adapts to that platform's project shape, rather than hardcoding any one tool. Returns a compact table of candidates with confidence and evidence, and asks rather than guessing when the leader is not clearly ahead."
 ---
 
 # Infer project
@@ -19,7 +19,11 @@ or Linear next month without a line changing.
 **no credentials**, and makes no network calls — it works on JSON you have already
 fetched. Run it with a plain shell command, never `RunWithCredentials`.
 
-## When to use it
+## Scope
+
+What this skill is for, and what it is not. It is deliberately narrower than the
+scope note an adopter ends up with — it names no other skill and no single
+platform — so widen it where your own library has neighbours to route between.
 
 - "Infer the motion project for this task."
 - "Run infer-project — which Asana project does this belong to?"
@@ -96,7 +100,7 @@ which level you used in your answer when it is not obvious.
 The script scores token overlap and prints a ranked shortlist. Run it:
 
 ```
-python3 infer_project_tools.py rank projects.json "Send denim copy to Anita"
+python3 infer_project_tools.py rank projects.json "Send ceramics copy to Ravi"
 python3 infer_project_tools.py rank projects.json --task-file task.txt --top 5
 ```
 
@@ -124,8 +128,8 @@ A **compact table**: candidate, confidence, and the evidence for each.
 
 | Project | Confidence | Evidence |
 |---|---|---|
-| Denim Course | High | Task text names "denim"; project description covers the autumn launch |
-| Style with Anita | Low | Shares only the person's name; project is about member sessions |
+| Ceramics Course | High | Task text names "ceramics"; project description covers the autumn launch |
+| Sessions with Ravi | Low | Shares only the person's name; project is about member sessions |
 
 Then a single line naming your pick — or, when it is close, a line saying you need them
 to choose. Nothing else. No restating the task, no summary of the platform, no offer to
@@ -151,20 +155,20 @@ user must be able to see that from the table alone.
 
 ## Worked example
 
-Task: *"Send the recording of the Travel with Anita Zoom call to all registered
+Task: *"Send the recording of the Travel with Ravi Zoom call to all registered
 participants"* — platform: Motion.
 
 1. Access: Motion is reachable via its API skill. Fetch the project list.
-2. Normalise: five projects, including `Style with Anita` ("Member sessions and
-   recordings") and `Denim Course`.
-3. Rank: `Style with Anita` is the only project scoring at all — it matches on
-   *recording* and *anita*. Nothing else shares a token.
-4. Judge: "Travel with Anita" is a member session, and the project description says
+2. Normalise: five projects, including `Sessions with Ravi` ("Member sessions and
+   recordings") and `Ceramics Course`.
+3. Rank: `Sessions with Ravi` is the only project scoring at all — it matches on
+   *recording* and *ravi*. Nothing else shares a token.
+4. Judge: "Travel with Ravi" is a member session, and the project description says
    *recordings*. Both point the same way.
 5. Report: one clear row, High confidence, evidence naming the two matched terms.
 
-Contrast a case that should *not* commit: *"Send the denim course email to the nurture
-sequence"* against a list holding both `Denim Course Launch` and `Email Marketing`. The
+Contrast a case that should *not* commit: *"Send the ceramics course email to the nurture
+sequence"* against a list holding both `Ceramics Course Launch` and `Email Marketing`. The
 task legitimately names both, the scores sit close, and the correct output is a table of
 two with a line asking which.
 
