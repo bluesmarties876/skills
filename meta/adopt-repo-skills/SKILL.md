@@ -105,8 +105,10 @@ python3 api.py GET /repos/{owner}/{repo}/git/trees/{ref}?recursive=1 \
     --owner OWNER --repo REPO --output /tmp/tree.json
 ```
 
-Fetch that skill's script first — `FetchSkillScripts("github-api")` — then run
-the command under `RunWithCredentials(skillName="github-api", ...)` so the token
+Read that skill's script out of the repo folder the resolver named — the local
+copy of `github-api` is a pointer and holds only a credential anchor, so
+`FetchSkillScripts("github-api")` will not give you `api.py` — then run the
+command under `RunWithCredentials(skillName="github-api", ...)` so the token
 is injected. This skill's own script sits beside this `SKILL.md`, at
 `scripts/repo_skill_inventory.py`: read it out of the repo folder the resolver
 named, because the local copy of this skill is a pointer and carries no scripts
@@ -153,7 +155,9 @@ SearchKnowledge("<name>")
   `create-pointer-skill` skill, so fetch it from there, not from this one:
 
   ```
-  FetchSkillScripts("create-pointer-skill")   # lands create_pointer_skill.py in the fetch directory
+  # create_pointer_skill.py sits beside create-pointer-skill's SKILL.md in the repo,
+  # at meta/create-pointer-skill/scripts/. Fetch it from the repo folder the resolver
+  # named: the local copy of that skill is a pointer, so FetchSkillScripts returns none.
   python3 create_pointer_skill.py classify --body-file /tmp/local_body.md
   ```
 
