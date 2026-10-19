@@ -387,18 +387,20 @@ it proves each check fires on a planted failure. If either file is missing, get 
 skill folder from the repo again rather than rewriting it.
 
 `commit_files.py`, `get_file.py`, `get_files.py`, `pr_ops.py` and `repo_browse.py` belong
-to the `github-api` skill and live in its `scripts/` folder. They **do** need a
-credential, so they run only through `RunWithCredentials` naming `github-api`:
+to the `github-api` skill and live in **that skill's folder in the repo**, under `scripts/`
+— `api/github-api/scripts/`. They **do** need a credential, so they run only through
+`RunWithCredentials` naming `github-api`, against the script in the extracted repo folder:
 
 ```
-FetchSkillScripts("github-api")          # -> script paths, e.g. skills/github-api/commit_files.py
 RunWithCredentials(
     skillName="github-api",
-    command="python3 skills/github-api/commit_files.py --manifest /tmp/stage-manifest.json")
+    command="python3 bluesmarties876-skills-<sha>/api/github-api/scripts/commit_files.py --manifest /tmp/stage-manifest.json")
 ```
 
-The script path comes from `FetchSkillScripts`; pass the arguments as one command string.
-Bare `python3` leaves the token unset and the script exits 2.
+Get those scripts from the repo, not from the skill host: `github-api` is a pointer there and
+holds only a credential anchor, so `FetchSkillScripts("github-api")` will not return the
+client. The `github-api` body documents the tarball route. Pass the arguments as one command
+string: bare `python3` leaves the token unset and the script exits 2.
 
 `stage_skill.py` flags:
 
