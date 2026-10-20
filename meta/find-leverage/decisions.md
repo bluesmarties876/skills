@@ -125,7 +125,7 @@ repo as it stood before.
 - **Status:** accepted
 - **Broken flow:** with an ally in every workspace, any of them could commit to the core, and
   the core's quality would be the weakest writer's.
-- **Change:** client allies send proposals; a maintainer's ally triages, vets and lands them
+- **Change:** client allies send proposals; the master ally triages, vets and lands them
   through the existing write path. Maintainers are the owner and their team.
 - **Proposed by:** the maintainer
 - **Verdict reason:** the maintainers' judgement, not every workspace's, decides what is in

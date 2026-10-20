@@ -6,7 +6,7 @@ This is the document every other file in this repo answers to. A skill is a meth
 
 ## What the system is
 
-One shared core of skills and schedules, held in this repo. Every business that uses it runs it through an **ally**: an agent in that business's own workspace whose job is to keep the workspace in step with the core.
+One shared core of skills and schedules, held in this repo. Every business that uses it runs it through an **ally**: an agent in that business's own workspace whose job is to keep the workspace in step with the core. The owner's ally is the **master ally**: she uses the system in the owner's workspace and also maintains the core itself.
 
 The core holds methods. A workspace holds pointers to them, plus its own context. There is one copy of each method, so an improvement made once reaches every workspace.
 
@@ -47,7 +47,7 @@ These are not traded against value. A change that breaks one is not a candidate.
 | Role | May | May not |
 | --- | --- | --- |
 | The core repo | hold methods, schedules, conventions and decisions | hold account content or credential values |
-| A maintainer's ally | maintain the core: vet, write, collapse, propose strategy | change this charter; switch off a safety check; accept her own proposal |
+| The master ally | maintain the core: vet, write, collapse, propose strategy | change this charter; switch off a safety check; accept her own proposal |
 | A client ally | sync her workspace, fill its hooks, protect core skills, report gaps and candidates | write to the core; send account content out of the workspace |
 | A peer agent | use core skills through pointers | edit a core skill in a client workspace |
 | A maintainer | approve, reject, write to the core, add a new kind of power | change this charter, unless they are the owner |
