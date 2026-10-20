@@ -2,6 +2,8 @@
 
 Each folder here is one skill: `<name>/SKILL.md`, plus any files it links to. They are plain markdown and assume no particular agent, editor, or tool.
 
+Read [PURPOSE.md](PURPOSE.md) first: it says what the system is for, and it outranks every skill.
+
 ## Running a skill
 
 1. Read `<name>/SKILL.md` in full before acting.

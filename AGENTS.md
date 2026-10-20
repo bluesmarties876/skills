@@ -10,6 +10,7 @@ skill by path.
 
 | Where | What |
 | --- | --- |
+| [PURPOSE.md](PURPOSE.md) | what the system is for, who it serves, and its absolute rules. Read it first; it outranks every skill |
 | [README.md](README.md) | what a skill is, and how to run one |
 | [CONVENTIONS.md](CONVENTIONS.md) | the rules every skill here follows, and the shared file the quality analyzer reads for its safety and sample checks |
 | `api/`, `meta/`, `project-management/` | the categories. A skill goes in the category that fits; a new category is fine when none does |
