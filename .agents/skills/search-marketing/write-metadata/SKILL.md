@@ -21,7 +21,7 @@ Sources, the evidence behind every threshold, the full worked example and the co
 failure modes are in [reference.md](reference.md), which is not loaded by default.
 Everything the steps name is shown here.
 
-Follow [CONVENTIONS.md](../../CONVENTIONS.md) throughout.
+Follow [CONVENTIONS.md](../../../../CONVENTIONS.md) throughout.
 
 ## Scope
 
@@ -68,7 +68,7 @@ data`, `script`, or `assumed`.
 | `meta-copy-rules` | this workspace's house rules: brand suffix and separator, tone, banned or required words | use Google's branding guidance (brand once, at the start or end, after a separator), and say in the report that no house rules were applied |
 | `search-data` | where this workspace gets search results, performance exports or keyword data | use public search results and whatever the person provides, and say in the report which |
 
-How a hook is reached is in [Companion skills](../../CONVENTIONS.md#companion-skills).
+How a hook is reached is in [Companion skills](../../../../CONVENTIONS.md#companion-skills).
 
 ## The script
 
