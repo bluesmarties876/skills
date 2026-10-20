@@ -113,8 +113,8 @@ repo as it stood before.
 - **Broken flow:** every commit to the core reaches every workspace the next morning, so a
   change in progress can break every client at once.
 - **Change:** a release step clients read from, which maintainers promote to. The mechanism
-  (a stable branch, tags, or something else) is undecided, and is an open question in
-  `PURPOSE.md`, not an absolute rule.
+  (a stable branch, tags, or something else) is undecided; this is a system to design, not
+  an absolute rule.
 - **Proposed by:** the maintainer
 - **Verdict reason:** the blast radius of a commit grows with every workspace.
 - **Signal awaited:** none until built.

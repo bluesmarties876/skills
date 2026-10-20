@@ -62,10 +62,3 @@ These are not traded against value. A change that breaks one is not a candidate.
 ## How this charter changes
 
 Only by the owner, and each change is recorded as a decision with its reason. An agent may propose a change to it; it never makes one.
-
-## Open questions
-
-Unsettled when this was drafted; each needs the maintainer's call.
-
-- **How a change reaches client workspaces safely.** Today every commit to the main line is live everywhere the next morning. Some release step is needed between work in progress and clients (a stable branch, tags, or something else); which one is not decided.
-- Whether the priority order above is right.
