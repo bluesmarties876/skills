@@ -116,8 +116,8 @@ checks skill would otherwise ask before editing its target.
 
 ### 3. Draft
 
-Write the skill as the approved plan says, following [README.md](../../README.md) and
-[CONVENTIONS.md](../../CONVENTIONS.md). Frontmatter is `name` and `description` only.
+Write the skill as the approved plan says, following [README.md](../../../../README.md) and
+[CONVENTIONS.md](../../../../CONVENTIONS.md). Frontmatter is `name` and `description` only.
 
 - **Action only.** `SKILL.md` says what to do, in order. Rationale and framework detail go
   in `sources.md` and are linked, not repeated.
@@ -172,7 +172,7 @@ Then stop. Do not commit or push.
 | `BLOCKED` | No source could be read, or a finding survived three rounds of fixes. |
 | `NEEDS_CONTEXT` | No goal, a name that clashes, or no readable `checks` skill. Name which. |
 
-For `BLOCKED`, use the shape in [CONVENTIONS.md](../../CONVENTIONS.md#ending-a-run):
+For `BLOCKED`, use the shape in [CONVENTIONS.md](../../../../CONVENTIONS.md#ending-a-run):
 
 ```
 STATUS: BLOCKED

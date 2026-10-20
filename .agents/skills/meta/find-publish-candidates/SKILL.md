@@ -7,7 +7,7 @@ description: A maintainer workspace's scheduled pass for local skills the core d
 
 Finds local skills in a maintainer's workspace that the core does not hold yet, checks whether each belongs in the core, and offers the ones that pass for publishing. It decides what is *worth* publishing. `publish-local-skill-to-repo` does the publishing, and `collapse-skill-to-pointer` turns the local copy into a pointer afterwards.
 
-Runs only in a maintainer's workspace. [PURPOSE.md](../../PURPOSE.md) rules 2 and 3 keep a client ally from writing to the core or sending a skill body out of her workspace, so a client workspace is out of scope. Stop with `NEEDS_CONTEXT` if the run cannot tell that this workspace is a maintainer's.
+Runs only in a maintainer's workspace. [PURPOSE.md](../../../../PURPOSE.md) rules 2 and 3 keep a client ally from writing to the core or sending a skill body out of her workspace, so a client workspace is out of scope. Stop with `NEEDS_CONTEXT` if the run cannot tell that this workspace is a maintainer's.
 
 Works on GitHub through its API, from a skill host that exposes `GetAgentConfig`, `SearchKnowledge`, `GetKnowledgeDetails` and `RunWithCredentials` for the workspace's skills, their content and the GitHub credential.
 
@@ -69,7 +69,7 @@ Read each candidate's body with `GetKnowledgeDetails`. Fan the reads out to suba
 
 | Test | Passes when | A failure means |
 | --- | --- | --- |
-| **Portable purpose** | the method would serve any business; nothing in its steps assumes one client, product or house rule | it stays local, or a generic part splits off with a companion hook ([CONVENTIONS.md](../../CONVENTIONS.md), rule 3 of "What to do with a specific") |
+| **Portable purpose** | the method would serve any business; nothing in its steps assumes one client, product or house rule | it stays local, or a generic part splits off with a companion hook ([CONVENTIONS.md](../../../../CONVENTIONS.md), rule 3 of "What to do with a specific") |
 | **Clean body** | the scanner the `cleanup` hook names finds nothing, and there are no client names, workspace or project ids, personal paths or credential values | it is cleaned first, by that hook, outside this skill |
 | **No overlap** | no core skill already does the job: search the core's skill names and descriptions for the candidate's subject | it is an edit to the overlapping skill, which is `update-repo-skill`'s job, or a merge a person decides |
 

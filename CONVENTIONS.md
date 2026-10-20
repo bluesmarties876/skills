@@ -57,7 +57,7 @@ When a skill reaches a hook, it reads the repo's agent instructions for a settin
 | name nothing | follows the hook's "Without one" outcome |
 | name a skill that cannot be read | stops with `NEEDS_CONTEXT`, naming it |
 
-There is no discovery by folder or by name pattern: a companion counts only when the agent instructions name it. That works the same in a repo, a shared library or a hosted skill platform with no folders, and lets two contexts fill one hook differently. A worked example: [analyze-skill-quality's reference](meta/analyze-skill-quality/reference.md#a-worked-example).
+There is no discovery by folder or by name pattern: a companion counts only when the agent instructions name it. That works the same in a repo, a shared library or a hosted skill platform with no folders, and lets two contexts fill one hook differently. A worked example: [analyze-skill-quality's reference](.agents/skills/meta/analyze-skill-quality/reference.md#a-worked-example).
 
 ## Who is watching
 

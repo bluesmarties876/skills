@@ -151,6 +151,6 @@ does not handle.
 
 **Used in** every step; the analyzer is run in full at step 4.
 
-**Sources.** [CONVENTIONS.md](../../CONVENTIONS.md), [README.md](../../README.md),
-[AGENTS.md](../../AGENTS.md), and
+**Sources.** [CONVENTIONS.md](../../../../CONVENTIONS.md), [README.md](../../../../README.md),
+[AGENTS.md](../../../../AGENTS.md), and
 [analyze-skill-quality](../analyze-skill-quality/SKILL.md).

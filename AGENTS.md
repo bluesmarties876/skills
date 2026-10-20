@@ -13,7 +13,7 @@ skill by path.
 | [PURPOSE.md](PURPOSE.md) | what the system is for, who it serves, and its absolute rules. Read it first; it outranks every skill |
 | [README.md](README.md) | what a skill is, and how to run one |
 | [CONVENTIONS.md](CONVENTIONS.md) | the rules every skill here follows, and the shared file the quality analyzer reads for its safety and sample checks |
-| `api/`, `meta/`, `project-management/` | the categories. A skill goes in the category that fits; a new category is fine when none does |
+| `.agents/skills/` | the skills, one folder per category (`api/`, `meta/`, ...). A skill goes in the category that fits; a new category is fine when none does. Agent tools that load skills from this folder, Cursor among them, offer each one as a slash command |
 
 To run a skill, read its `SKILL.md` and follow it.
 
@@ -27,7 +27,7 @@ is a companion: it fills that hook in every skill that declares it (see
 | --- | --- |
 | Base branch | `main` |
 | Merge method | squash |
-| `checks` | [analyze-skill-quality](meta/analyze-skill-quality/SKILL.md) |
+| `checks` | [analyze-skill-quality](.agents/skills/meta/analyze-skill-quality/SKILL.md) |
 | Ally report label | `ally-report` |
 | Ally report seen label | `ally-report-seen` |
 | Ally report quarantine label | `ally-report-quarantined` |
@@ -54,13 +54,13 @@ For any agent that changes a file here, through a skill or directly.
 3. **GitHub decides how a change may land.** Try the write the credential is set up for.
    If it is refused because a pull request is required, open one instead and say so in the
    report. Do not model roles, identities or bypass lists in a skill.
-4. **Credentials come from the API skills.** [github-api](api/github-api/SKILL.md) holds
+4. **Credentials come from the API skills.** [github-api](.agents/skills/api/github-api/SKILL.md) holds
    the GitHub token. No skill here carries a credential of its own, and no credential
    value is ever written into a file.
 
 ## This repo is private
 
-Reads and writes need the GitHub token from [github-api](api/github-api/SKILL.md). An
+Reads and writes need the GitHub token from [github-api](.agents/skills/api/github-api/SKILL.md). An
 unauthenticated read fails, and GitHub reports that failure as a 404.
 
 Nothing account-specific goes into a skill: no client names, no workspace or project ids,

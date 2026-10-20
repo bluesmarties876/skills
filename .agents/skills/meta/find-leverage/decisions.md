@@ -1,6 +1,6 @@
 # Decisions
 
-The memory of `find-leverage`: every proposal it made, the verdict a person gave, and why. Read before ranking. A rejection's reason is a **standing rule** that narrows what may be proposed; it can never contradict [PURPOSE.md](../../PURPOSE.md). A change to the charter is recorded here too.
+The memory of `find-leverage`: every proposal it made, the verdict a person gave, and why. Read before ranking. A rejection's reason is a **standing rule** that narrows what may be proposed; it can never contradict [PURPOSE.md](../../../../PURPOSE.md). A change to the charter is recorded here too.
 
 Nothing in this file names a client, a workspace, a person other than by role, or an id. Every business's ally reads the core, so this file is read by all of them.
 
