@@ -11,7 +11,7 @@ Not the biggest bug, and not the most useful new method. The change that makes t
 
 It proposes. It does not build, and it does not ratify its own proposal. A person says yes, and the repo's normal write path does the work.
 
-The network it reasons about is described in [PURPOSE.md](../../PURPOSE.md): one core of skills and schedules, and an ally in each workspace keeping it in step. Everything this skill scores against comes from there. [reference.md](reference.md), not loaded by default, holds the scoring rationale, worked examples and the replay benchmark.
+The network it reasons about is described in [PURPOSE.md](../../../../PURPOSE.md): one core of skills and schedules, and an ally in each workspace keeping it in step. Everything this skill scores against comes from there. [reference.md](reference.md), not loaded by default, holds the scoring rationale, worked examples and the replay benchmark.
 
 ## Inputs
 

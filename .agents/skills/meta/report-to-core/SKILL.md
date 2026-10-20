@@ -7,7 +7,7 @@ description: A client ally's daily report to the core. Reads the workspace's fee
 
 A client ally's daily report: what her peer agents' threads show about the core's skills, sent back to the core in a form that carries no account content.
 
-Works on GitHub through the `github-api` skill: reports are issues on the core repo. An issue is not repo contents, so filing one does not write to the core, and [PURPOSE.md](../../PURPOSE.md) rule 2 holds. The master ally reads them with `collect-ally-reports`.
+Works on GitHub through the `github-api` skill: reports are issues on the core repo. An issue is not repo contents, so filing one does not write to the core, and [PURPOSE.md](../../../../PURPOSE.md) rule 2 holds. The master ally reads them with `collect-ally-reports`.
 
 [reference.md](reference.md), not loaded by default, holds the closed `need` vocabulary and why the record is shaped as it is.
 

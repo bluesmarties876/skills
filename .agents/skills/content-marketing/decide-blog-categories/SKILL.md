@@ -213,4 +213,4 @@ End with one status line:
 | `DONE` | Every category has non-assumed evidence and every stage is covered or the gap is explained. |
 | `DONE_WITH_CONCERNS` | A proposal was returned, but some categories rest on `assumed` evidence, a stage gap is unresolved, or no data beyond answers was supplied. Name which. |
 | `NEEDS_CONTEXT` | Audience or offer is unknown and the run cannot ask (unattended), or the person declined to answer them. Name what is missing. |
-| `BLOCKED` | Nothing supplied can be read after three attempts, and there is no person to interview. Report it in the `STATUS / REASON / ATTEMPTED / RECOMMENDATION` shape from [CONVENTIONS.md](../../CONVENTIONS.md#ending-a-run). |
+| `BLOCKED` | Nothing supplied can be read after three attempts, and there is no person to interview. Report it in the `STATUS / REASON / ATTEMPTED / RECOMMENDATION` shape from [CONVENTIONS.md](../../../../CONVENTIONS.md#ending-a-run). |

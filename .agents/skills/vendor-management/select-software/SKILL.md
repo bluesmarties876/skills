@@ -20,7 +20,7 @@ person can check. The method stacks established frameworks, each answering one q
 Sources, the criteria catalogue and blank input templates are in [reference.md](reference.md),
 which is not loaded by default. Everything the steps name is shown here.
 
-Follow [CONVENTIONS.md](../../CONVENTIONS.md) throughout.
+Follow [CONVENTIONS.md](../../../../CONVENTIONS.md) throughout.
 
 ## Scope
 
@@ -63,7 +63,7 @@ approval and their own tooling.
 | `selection-criteria` | this workspace's house musts and wants: a security baseline, an approved-vendor list, procurement thresholds | use the generic catalogue in reference.md, and say in the report that no house criteria were applied |
 | `selection-research` | where this workspace gets analyst reports, review data or past evaluations | use public sources, and say in the report which ones and that no paid research was used |
 
-How a hook is reached is in [Companion skills](../../CONVENTIONS.md#companion-skills).
+How a hook is reached is in [Companion skills](../../../../CONVENTIONS.md#companion-skills).
 
 ## The script
 
