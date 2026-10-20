@@ -96,6 +96,8 @@ The last thing a skill reports is one status line:
 | `BLOCKED` | Cannot continue. Say what blocked it and what was tried. |
 | `NEEDS_CONTEXT` | Missing a fact or a value. Name exactly what is needed. |
 
+The status line is also how the network hears how a skill went: `review-own-threads` reads it from each thread when it reviews the day's work. A run that ends without one is logged as unknown, so it says nothing.
+
 For `BLOCKED` or an escalation, use this shape so a person or another agent can act on it without re-reading the run:
 
 ```

@@ -37,12 +37,12 @@ The first seven came from the maintainer, before this skill existed. They are th
 ### D-1: Allies report gaps and failures back to the core
 
 - **Date:** 2026-10-20
-- **Status:** accepted
-- **Broken flow:** nothing carries what happens in a workspace (a need no skill covered, a run that stopped, a request that selected no skill) back to the core, so every ranking is a guess from structure.
-- **Change:** a skill every ally runs that emits an agnostic record (skill, status, kind of need), and a place in the core that collects them.
+- **Status:** built
+- **Broken flow:** nothing carries what happens in a workspace (a need no skill covered, a run that stopped, a request that selected no skill, a person who rejected a skill's output or declined to use it) back to the core, so every ranking is a guess from structure.
+- **Change:** a skill every ally runs that emits an agnostic record (skill, status, kind of need), and a place in the core that collects them. Built as three skills: `review-own-threads` (each peer reviews its own threads daily into a local log, with a heartbeat), `report-to-core` (the ally validates and files one shared issue per finding), and `collect-ally-reports` (the master ally tallies them for this skill).
 - **Proposed by:** the maintainer
 - **Verdict reason:** without evidence from the network, every other improvement is ranked blind.
-- **Signal awaited:** none until built.
+- **Signal awaited:** the first validated report collected, and a `find-leverage` run whose evidence line is no longer "structure only".
 
 ### D-2: A pipeline from a workspace skill into the core
 
@@ -113,3 +113,13 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Proposed by:** the maintainer
 - **Verdict reason:** without one written purpose, every agent invents its own idea of value.
 - **Signal awaited:** none; it is read by every run of `find-leverage`.
+
+### D-9: The core declares schedules, and each ally reconciles her peers to them
+
+- **Date:** 2026-10-20
+- **Status:** pending
+- **Broken flow:** when the core changes how often a peer should run a method (a daily check becoming weekly, say), nothing tells the peers in each workspace, so their schedules drift from the core's intent and no one notices.
+- **Change:** a declared-schedule manifest in the core, and a step in each client ally that compares her peers' schedules with it and spawns each affected peer to update its own schedule or propose the update. D-1 already does this for one schedule, the daily `review-own-threads`. Overlaps D-4's daily check of peer rules.
+- **Proposed by:** the maintainer
+- **Verdict reason:** (awaiting a person)
+- **Signal awaited:** none until built.
