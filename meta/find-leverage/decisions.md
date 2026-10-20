@@ -103,3 +103,13 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Proposed by:** the maintainer
 - **Verdict reason:** the maintainers' judgement, not every workspace's, decides what is in the core.
 - **Signal awaited:** none until built.
+
+### D-8: Ratify PURPOSE.md
+
+- **Date:** 2026-10-20
+- **Status:** built
+- **Broken flow:** the system's goal, who it serves and its absolute rules existed only in conversation, so nothing could rank or refuse a change against them.
+- **Change:** `PURPOSE.md` at the repo root, reviewed and approved by the owner, outranking every skill.
+- **Proposed by:** the maintainer
+- **Verdict reason:** without one written purpose, every agent invents its own idea of value.
+- **Signal awaited:** none; it is read by every run of `find-leverage`.

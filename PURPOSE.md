@@ -1,7 +1,5 @@
 # Purpose
 
-**Status: draft, awaiting the maintainer's approval.** Until approved, read it as the intended charter, not a ratified one.
-
 This is the document every other file in this repo answers to. A skill is a method for meeting the purpose below. [CONVENTIONS.md](CONVENTIONS.md) is how its rules are applied. Recorded decisions narrow how this charter is read; they never contradict it. Where anything in the repo disagrees with this file, this file wins and the disagreement is a defect.
 
 ## What the system is
