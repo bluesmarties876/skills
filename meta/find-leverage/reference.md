@@ -43,7 +43,7 @@ the first one's signal has not arrived.
 ### Dropped by the charter
 
 "Let client allies commit small fixes directly" scores well on attention. It breaks the
-one-writer and client-allies-propose rules, so it is dropped before scoring and listed with
+only-maintainers-write and client-allies-propose rules, so it is dropped before scoring and listed with
 those rules, not reshaped until it fits.
 
 ### Change nothing
@@ -63,8 +63,8 @@ For each entry seeded in decisions.md, the evidence that was in the repo before 
 | D-3 findability | adopt writes `whenToUse` once and nothing re-checks it; seven skills nothing else refers to, so only selection reaches them |
 | D-4 core protection | `collapse-skill-to-pointer` detects a local edit only when someone runs it; nothing schedules it |
 | D-5 companions for business context | the `## Companions` mechanism exists and only one skill declares hooks, none of them for business context |
-| D-6 stable ref | pointers resolve against the default branch, and every commit is immediately live |
-| D-7 one writer | the write path assumes one credential and one writer; nothing says so for many workspaces |
+| D-6 release step | pointers resolve against the default branch, and every commit is immediately live |
+| D-7 only maintainers write | the write path assumes one credential and one writer; nothing says so for many workspaces |
 
 To run it: give the skill the repo at the commit before PURPOSE.md, with decisions.md
 emptied, and check which of these it proposes or names as a runner-up. A miss is a question

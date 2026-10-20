@@ -43,8 +43,8 @@ exists, there are no reports, and that is itself a candidate (see Step 2).
 3. This skill writes nothing except a `pending` entry in `decisions.md`, and that only
    through the repo's write path (`skill-repo-write`, or a pull request where one is
    required). It never edits a skill, a schedule, `PURPOSE.md` or a guard.
-4. **Only the maintainer's ally records to the core.** `PURPOSE.md` gives one writer. Run
-   from any other workspace, this skill reports its recommendation to that workspace's
+4. **Only a maintainer's ally records to the core.** `PURPOSE.md` lets only maintainers
+   write. Run from a client workspace, this skill reports its recommendation to that workspace's
    person or ally and writes nothing to `decisions.md`.
 5. No ally report or decision entry may carry account content. If one does, that is a
    finding against rule 1 of `PURPOSE.md`, and the content is not quoted in the report.

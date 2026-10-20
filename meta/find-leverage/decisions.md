@@ -5,8 +5,8 @@ Read before ranking. A rejection's reason is a **standing rule** that narrows wh
 proposed; it can never contradict [PURPOSE.md](../../PURPOSE.md). A change to the charter is
 recorded here too.
 
-Nothing in this file names a client, a workspace, a person other than by role, or an id. It
-is public.
+Nothing in this file names a client, a workspace, a person other than by role, or an id.
+Every business's ally reads the core, so this file is read by all of them.
 
 ## Entry shape
 
@@ -106,26 +106,28 @@ repo as it stood before.
 - **Verdict reason:** cloning a method to add context is how copies go stale.
 - **Signal awaited:** none until built.
 
-### D-6: Clients read a stable ref
+### D-6: A release step between work in progress and clients
 
 - **Date:** 2026-10-20
 - **Status:** accepted
 - **Broken flow:** every commit to the core reaches every workspace the next morning, so a
   change in progress can break every client at once.
-- **Change:** pointers in client workspaces resolve against a release ref the maintainer
-  promotes to; work lands on the main line first.
+- **Change:** a release step clients read from, which maintainers promote to. The mechanism
+  (a stable branch, tags, or something else) is undecided, and is an open question in
+  `PURPOSE.md`, not an absolute rule.
 - **Proposed by:** the maintainer
 - **Verdict reason:** the blast radius of a commit grows with every workspace.
 - **Signal awaited:** none until built.
 
-### D-7: One writer to the core
+### D-7: Only maintainers write to the core
 
 - **Date:** 2026-10-20
 - **Status:** accepted
 - **Broken flow:** with an ally in every workspace, any of them could commit to the core, and
   the core's quality would be the weakest writer's.
-- **Change:** client allies send proposals; the maintainer's ally triages, vets and lands
-  them through the existing write path.
+- **Change:** client allies send proposals; a maintainer's ally triages, vets and lands them
+  through the existing write path. Maintainers are the owner and their team.
 - **Proposed by:** the maintainer
-- **Verdict reason:** one place applies the maintainer's judgement.
+- **Verdict reason:** the maintainers' judgement, not every workspace's, decides what is in
+  the core.
 - **Signal awaited:** none until built.
