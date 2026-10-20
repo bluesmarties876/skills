@@ -20,9 +20,9 @@ The network it reasons about is described in [PURPOSE.md](../../PURPOSE.md): one
 | `PURPOSE.md` at the repo root | what value means, the absolute rules, the roles | stop with `NEEDS_CONTEXT`: with no definition of value there is nothing to rank against |
 | The core repo, as a folder on disk | the structural evidence | stop with `NEEDS_CONTEXT`. Fetch it as a tarball through `github-api` and extract it |
 | [decisions.md](decisions.md) | memory: past proposals, verdicts, standing rules, loops waiting for a signal | treat as empty, and say so: every proposal is then unchecked against past verdicts |
-| Ally reports from workspaces | what is actually used, missing and failing | rank from structure alone, and say so in the report's first line. The recommendation is then about the shape of the core, not about what businesses need |
+| Ally reports from workspaces | what is actually used, missing, failing and disappointing | rank from structure alone, and say so in the report's first line. The recommendation is then about the shape of the core, not about what businesses need |
 
-Ally reports arrive in whatever form the network's reporting skill defines. If no such skill exists, there are no reports, and that is itself a candidate (see Step 2).
+Ally reports come from `collect-ally-reports --json`: each finding with its distinct reporters, explicit and inferred sightings, and any regression, plus the skills that succeed but disappoint and the workspaces whose reporting has gone quiet. Run it first. Its `evidence` is `no ally reports` when none have arrived; rank from structure then, and say so. Weigh reach by distinct reporters, and an explicit sighting above an inferred one. A quiet workspace is a broken sensor, not a sign that nothing is wrong there.
 
 ## Safety
 

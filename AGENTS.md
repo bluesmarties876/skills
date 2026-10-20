@@ -28,10 +28,18 @@ is a companion: it fills that hook in every skill that declares it (see
 | Base branch | `main` |
 | Merge method | squash |
 | `checks` | [analyze-skill-quality](meta/analyze-skill-quality/SKILL.md) |
+| Ally report label | `ally-report` |
+| Ally report seen label | `ally-report-seen` |
+| Ally report quarantine label | `ally-report-quarantined` |
+| Ally heartbeat label | `ally-heartbeat` |
 
 `layout` and `cleanup` are deliberately unset. This file's own layout section is what
 `layout` would otherwise point at, and no skill in this repo cleans account-specific
 content, so both fall to their "Without one" outcome.
+
+`feedback-log` and `feedback-reporting` are unset here too. They are filled in each client
+workspace's own agent instructions, because where a workspace keeps its peers' log, and
+whether its person reports dissatisfaction, belong to that workspace.
 
 ## Writing to this repo
 
