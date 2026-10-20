@@ -50,11 +50,16 @@ For any agent that changes a file here, through a skill or directly.
    the GitHub token. No skill here carries a credential of its own, and no credential
    value is ever written into a file.
 
-## This repo is public
+## This repo is private
+
+Reads and writes need the GitHub token from [github-api](api/github-api/SKILL.md). An
+unauthenticated read fails, and GitHub reports that failure as a 404.
 
 Nothing account-specific goes into a skill: no client names, no workspace or project ids,
 no personal paths, no house copy rules. A credential slot is the only account-specific
 thing a skill may carry, and its value lives in the credential store, never in a file.
+The repo being private does not relax this. [PURPOSE.md](PURPOSE.md) rule 1 is why: the
+core is shared by every business.
 
 ## The environment
 

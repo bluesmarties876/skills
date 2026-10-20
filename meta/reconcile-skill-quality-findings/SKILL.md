@@ -10,7 +10,7 @@ compare what it finds against the skill's own Quality Analysis card, fix the tar
 both sets, and improve the analyzer wherever the comparison proves a gap.
 
 Works on Hyperagent through its skill, knowledge and subagent tools, its skill Quality
-Analysis card, and on GitHub through its public API.
+Analysis card, and on GitHub through its REST API.
 
 The two analyzers are different instruments, which is the point:
 
@@ -340,8 +340,9 @@ Three hazards to pass on:
 - **The repo may require a pull request.** Attempt the base-branch write first, and treat
   the refusal as the signal to take the branch-and-PR route. An unmerged change is
   `PROPOSED`, not landed.
-- **A write can fail on credentials rather than logic.** The repo is public for reads, so a
-  read failure and a write failure are different diagnoses. Say which you hit.
+- **A write can fail on credentials rather than logic.** The repo is private, so a read
+  and a write both need the token. A read failure and a write failure are different
+  diagnoses. Say which you hit.
 
 ## Phase 6: report, and close the loop
 
