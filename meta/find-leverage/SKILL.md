@@ -86,14 +86,14 @@ It prints candidates, never conclusions. Trimmed, from a run on this repo:
 
 ```
 [referred to, not held] 2
-  certain    publish-local-skill-to-repo  <- list-unpointed-skills, skill-repo-write, update-repo-skill
-             meta/list-unpointed-skills/SKILL.md:42, meta/list-unpointed-skills/SKILL.md:62, meta/skill-repo-write/SKILL.md:9
+  certain    feedback-log  <- (root), report-to-core, review-own-threads
+             AGENTS.md:40, meta/report-to-core/SKILL.md:27, meta/report-to-core/SKILL.md:37
   candidate  make-skill-agnostic  <- update-repo-skill
              meta/update-repo-skill/SKILL.md:274
 
-[hooks] 3
-  checks  (declared by update-repo-skill): set to analyze-skill-quality
-  cleanup  (declared by update-repo-skill): unset: every declaring skill takes its 'Without one' outcome
+[hooks] 5
+  checks  (declared by publish-local-skill-to-repo, update-repo-skill): set to analyze-skill-quality
+  cleanup  (declared by find-publish-candidates, publish-local-skill-to-repo, update-repo-skill): unset: every declaring skill takes its 'Without one' outcome
 ```
 
 | Section | What it suggests | Confirm by |

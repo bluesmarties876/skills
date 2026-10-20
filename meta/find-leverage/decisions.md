@@ -47,12 +47,12 @@ The first seven came from the maintainer, before this skill existed. They are th
 ### D-2: A pipeline from a workspace skill into the core
 
 - **Date:** 2026-10-20
-- **Status:** accepted
+- **Status:** built
 - **Broken flow:** a skill made in one workspace that every workspace would benefit from has no path into the core; `publish-local-skill-to-repo` is named by three skills and held by none.
-- **Change:** a scheduled pass that finds workspace skills with no core home, gates their candidacy (portable purpose, clean body, no overlap), and on a person's yes hands them to publish, the cleanup scan and the quality checks, then collapses the local copy once the write has landed on the ref clients read.
+- **Change:** a scheduled pass that finds workspace skills with no core home, gates their candidacy (portable purpose, clean body, no overlap), and on a person's yes hands them to publish, the cleanup scan and the quality checks, then collapses the local copy once the write has landed on the ref clients read. Built as two skills for maintainer workspaces: `find-publish-candidates` (the scheduled find and gate) and `publish-local-skill-to-repo` (the write workflow, which hands to `skill-repo-write` and offers `collapse-skill-to-pointer`). Until D-6 names a release ref, the ref clients read is the base branch. Client workspaces are left to D-10.
 - **Proposed by:** the maintainer
 - **Verdict reason:** the best methods are stuck in the workspaces they were written in.
-- **Signal awaited:** none until built.
+- **Signal awaited:** the first local skill published and collapsed to a pointer through the pipeline.
 
 ### D-3: Calibrate findability across workspaces
 
@@ -120,6 +120,16 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Status:** pending
 - **Broken flow:** when the core changes how often a peer should run a method (a daily check becoming weekly, say), nothing tells the peers in each workspace, so their schedules drift from the core's intent and no one notices.
 - **Change:** a declared-schedule manifest in the core, and a step in each client ally that compares her peers' schedules with it and spawns each affected peer to update its own schedule or propose the update. D-1 already does this for one schedule, the daily `review-own-threads`. Overlaps D-4's daily check of peer rules.
+- **Proposed by:** the maintainer
+- **Verdict reason:** (awaiting a person)
+- **Signal awaited:** none until built.
+
+### D-10: Client workspaces can put forward a skill for the core
+
+- **Date:** 2026-10-20
+- **Status:** pending
+- **Broken flow:** D-2 reaches only maintainer workspaces; a method written in a client workspace still has no path into the core, because rules 2 and 3 of `PURPOSE.md` stop a client ally writing to the core or sending a skill body out.
+- **Change:** undecided. One shape: the client ally sends an agnostic "candidate exists" record through `report-to-core` (skill kind and need, no body), and a maintainer follows it up with that business. Any shape that carries a body out needs the owner's ruling on rule 3 first.
 - **Proposed by:** the maintainer
 - **Verdict reason:** (awaiting a person)
 - **Signal awaited:** none until built.
