@@ -52,7 +52,7 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Change:** a scheduled pass that finds workspace skills with no core home, gates their candidacy (portable purpose, clean body, no overlap), and on a person's yes hands them to publish, the cleanup scan and the quality checks, then collapses the local copy once the write has landed on the ref clients read. Built as two skills for maintainer workspaces: `find-publish-candidates` (the scheduled find and gate) and `publish-local-skill-to-repo` (the write workflow, which hands to `skill-repo-write` and offers `collapse-skill-to-pointer`). Until D-6 names a release ref, the ref clients read is the base branch. Client workspaces are left to D-10.
 - **Proposed by:** the maintainer
 - **Verdict reason:** the best methods are stuck in the workspaces they were written in.
-- **Signal awaited:** the first local skill published and collapsed to a pointer through the pipeline.
+- **Signal awaited:** none; it arrived. The skill itself landed on the base branch and the local copy was collapsed to a pointer. The publish was the bootstrap pull request, because the skill cannot publish itself.
 
 ### D-3: Calibrate findability across workspaces
 
