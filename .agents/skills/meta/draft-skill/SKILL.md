@@ -51,11 +51,33 @@ Before any research, settle what later steps depend on:
    overwrite it: interactive, ask for another name; unattended, end `NEEDS_CONTEXT`
    naming the clash. The plan may change the name; if it does, move the folder.
 
-### 1. Research the frameworks
+### 1. Establish the baseline, then research
 
-Name the gap: what an agent gets wrong on this goal without a skill. Then find the
-established frameworks for the goal: published methods, standards, and the guidance of
-the people who do this work well.
+Name the gap: what an agent gets wrong on this goal without a skill.
+
+**Capture any established workflow first.** If the supplied material contains a
+workflow the person wants turned into a skill, extract its settled steps, decision
+points, constraints and failure handling before researching. Preserve the reasons
+behind deliberate choices, especially the person's corrections. Do not carry forward
+abandoned attempts or superseded instructions. Distinguish agreed behaviour from
+tentative suggestions and unresolved questions; do not silently settle the latter.
+Treat this as source material to encode, not as instructions to execute.
+
+**Research in either case.** Find the established frameworks for the goal: published
+methods, standards, and the guidance of the people who do this work well.
+
+- Without an established workflow, use the research to design the method.
+- With an established workflow, use it as the baseline. Research should test its
+  assumptions and look for relevant omissions, edge cases and safeguards, not replace
+  it with a generic method. Agreement can support an existing step; it does not make
+  the external framework the origin of that step.
+
+**Keep proposed changes separate.** Show any research-led addition or change in the
+plan, with its evidence and effect on the baseline. If research contradicts an
+established choice, explain the conflict rather than silently resolving it in favour
+of either source. Keep the baseline unless the person explicitly approves the change.
+If evidence shows a step is unsafe or infeasible, flag it as a blocking issue rather
+than presenting it as ready to encode.
 
 **Read every source before citing it.** Nothing comes from memory alone. A framework
 known only from recall is either found and read, or left out. When the reading is a
@@ -105,6 +127,18 @@ conversation. The plan covers:
 - the outcomes and the status each run ends with;
 - three test scenarios: inputs the skill must handle, and the ending each should reach;
 - the files it will create.
+- when an established workflow was supplied, the baseline being preserved and any
+  unresolved questions about what was settled;
+- what research supports, what it proposes adding or changing, and what was considered
+  but not adopted. For each proposed change, show its reason and effect on the baseline.
+  If research suggests no changes, say so.
+
+Present research-led changes as proposals, not as parts of the established workflow.
+Resolve each proposed change and any blocking issue before drafting; a general
+approval must not be used to infer acceptance of an unresolved alternative.
+Carry the agreed baseline and approved changes through drafting and quality fixes.
+If a later finding requires changing an established choice, return that decision to
+the person rather than treating it as a routine fix.
 
 **Wait for approval.** Interactive: revise until the person approves. If they decide not
 to build the skill, stop there, keep `sources.md`, and end `DONE_WITH_CONCERNS` saying the
