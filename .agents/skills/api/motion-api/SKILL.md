@@ -419,6 +419,10 @@ unexpectedly:
 - **No calendar/events endpoint exists**, which is why "next up" has to be derived from
   `scheduledStart` rather than fetched.
 
+## Ending
+
+Called by another skill: hand back the status and findings as plain facts; the caller writes the one reply. Asked for directly by a person: reply as [write-run-report](../../meta/write-run-report/SKILL.md) says. A lasting 401 is 🟡 Your turn: ask for a new key.
+
 ## Files
 
 Three files that **must stay together in the same folder** — `motion.py` imports

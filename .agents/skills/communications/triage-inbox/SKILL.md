@@ -26,7 +26,7 @@ method. Task capture is delegated to [capture-task-from-email](../capture-task-f
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| Which mailbox(es), by address | step 1 | interactive: ask. Unattended: `NEEDS_CONTEXT` |
+| Which mailbox(es), by address | step 1 | ask; unattended, stop with 🟡 Your turn |
 | Mode: `review`, `approve`, or `unattended` | every step | interactive: `approve`. Unattended prompt: `unattended` |
 | Batch size (conversations per pass) | step 1 | 20 |
 | Where captured tasks go (platform) | step 5 | see the `task-platform` hook in Companions |
@@ -40,7 +40,7 @@ method. Task capture is delegated to [capture-task-from-email](../capture-task-f
 | `unattended` | yes | yes, as a report for later | none: no send, no task, no archive, no label |
 
 `unattended` is the only mode an automation may run. It produces the same proposals
-`approve` would, and stops with `DONE_WITH_CONCERNS` listing them.
+`approve` would, sends them through the `follow-ups` hook, and ends 🟡 Your turn.
 
 ## Safety
 
@@ -67,7 +67,7 @@ method. Task capture is delegated to [capture-task-from-email](../capture-task-f
 
 A companion opens by naming the hook it fills. Read the harness's agent instructions for
 a setting named after the hook; if the setting names a skill that cannot be read, stop
-with `NEEDS_CONTEXT` naming it.
+with 🟡 Your turn, asking for it to be fixed.
 
 ## Method
 
@@ -78,7 +78,7 @@ until the batch is full or the inbox is exhausted. Record the count per mailbox.
 ledger for the run: every conversation id seen, its classification, the decision taken,
 and every write made (what, which id, result).
 
-If a listing cannot be read, end `BLOCKED` naming the mailbox. Do not triage the others
+If a listing cannot be read, end 🔴 Stopped naming the mailbox. Do not triage the others
 as if it were empty.
 
 ### 2. Read whole conversations
@@ -114,8 +114,8 @@ Apply the `triage-classification` hook first, then content. When two classes fit
 
 ### 4. Propose, then collect decisions
 
-Write the batch as a short report: one line per conversation with its class and the
-proposed action, clusters shown together with what is already done and what remains.
+Write the batch as a short report: one line per conversation saying in plain words what it is
+and the proposed action, clusters shown together with what is already done and what remains.
 State facts the proposal depends on that the agent could not verify (is this still
 outstanding? who owns this?) as questions, not assumptions.
 
@@ -153,7 +153,7 @@ is new input for the next batch, not a failed close.
 ### 7. Verify and refresh
 
 Read the inbox again. Confirm every closed id is gone and every kept id is present.
-Confirm every created task by its id. Report the counts: seen, replied, captured,
+Confirm every created task by its id. Note the counts: seen, replied, captured,
 closed, kept, and why each kept item stays.
 
 ### 8. Loop or stop
@@ -161,9 +161,8 @@ closed, kept, and why each kept item stays.
 If mail remains and no stop state applies, go to step 1 with the next batch. The next
 batch's questions are the end of this turn; a progress summary alone is not.
 
-Stop when: every mailbox lists zero (`DONE`); the person stops the run; a write fails
-three times for the same reason (`BLOCKED`); or a hook names a skill that cannot be read
-(`NEEDS_CONTEXT`).
+Stop when: every mailbox lists zero; the person stops the run; a write fails three
+times for the same reason; or a hook names a skill that cannot be read.
 
 ## Checklist
 
@@ -178,9 +177,11 @@ three times for the same reason (`BLOCKED`); or a hook names a skill that cannot
 
 ## Ending
 
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
+
 | Status | When |
 | --- | --- |
-| `DONE` | Every mailbox lists zero and every write was verified. |
-| `DONE_WITH_CONCERNS` | `review` or `unattended` finished with proposals pending; or items were kept by the person's choice. List them. |
-| `BLOCKED` | A mailbox could not be read, or a write failed three times for the same reason. |
-| `NEEDS_CONTEXT` | No mailbox named, or a hook names a skill that cannot be read. |
+| 🟢 Finished | Every mailbox lists zero and every write was verified. |
+| 🟡 Your turn | Proposals await decisions (`review`, `unattended`); or no mailbox was named, or a hook's skill cannot be read. |
+| 🔵 Waiting | Every write was verified; the only mail left is what the person chose to keep, and it stays in their inbox. |
+| 🔴 Stopped | A mailbox could not be read, or a write failed three times for the same reason. |

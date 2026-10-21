@@ -136,7 +136,7 @@ here: a skill missing from this step is a skill the plan would silently skip, so
 the inventory script refuses a plan with a gap rather than quietly omitting one.
 
 This is the expensive step: one search per repo skill, plus a classify per exact
-match, before anything is planned. Report each row as it lands.
+match, before anything is planned.
 
 For each name:
 
@@ -205,7 +205,7 @@ This additive sweep does not repair existing pointers without the person asking.
 ### 4. Apply, one skill at a time
 
 Only once the plan exists, work its `CREATE` rows one at a time, in the order it
-lists them, reporting each result as it lands. A creation comes back in one of
+lists them. A creation comes back in one of
 two modes: an **auto-saved** result is created, and anything
 else is a **card** — a draft nothing has created until the person clicks it.
 Report which happened, from the result's own `mode`. For each row, hand to
@@ -255,15 +255,19 @@ GetKnowledgeDetails(type="skill", id="<the id the creation returned>")
 - `name` is the repo's folder leaf name exactly, because that is what the
   resolver resolves by.
 
-With the results in hand, say, in the person's terms:
+Per-skill outcomes, the ref read and these checks go in the run's working notes.
+The reply says how many of the repo's skills are now usable here, and what only
+the person can finish.
 
-- which ref was read, and the repo
-- every skill the repo holds, and its outcome
-- what was created, and the mode each creation came back in — an auto-saved
-  result is created, anything else is a draft awaiting their click
-- which pointers resolved, and which did not
-- what was handed off, and what was reported but left alone
-- anything that stopped the sweep partway
+## Ending
+
+Reply as [write-run-report](../write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | every missing skill is a saved pointer that resolves |
+| 🟡 Your turn | a creation is a draft to save; a conflicting or shared name, or a full local skill to collapse, needs their decision; or the repo is unknown |
+| 🔴 Stopped | the resolver is absent, GitHub refused, the listing is incomplete, a pointer does not resolve, or the sweep stopped partway |
 
 ## Failure modes worth recognising
 

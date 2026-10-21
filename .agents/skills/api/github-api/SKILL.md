@@ -284,3 +284,13 @@ Other skills should not duplicate `GITHUB_PAT` into their own credential schemas
 A subagent that needs repo access should not spend three calls on `SearchKnowledge` → `GetKnowledgeDetails` → hunting for the scripts. Put the extracted script path and the coordinates straight in its brief:
 
 > Use `RunWithCredentials(skillName="github-api", command="python3 'bluesmarties876-skills-<sha>/api/github-api/scripts/get_files.py' --owner <OWNER> --repo <REPO> --ref main --path <path>")`, where the `bluesmarties876-skills-<sha>` folder is the one the repo tarball unpacked to. Batch paths with repeatable `--path`. For anything not covered by a wrapper, use `api.py METHOD /path --owner --repo`. Return file path, line number and an excerpt of at most five lines per hit — never whole file bodies.
+
+## Ending
+
+Called by another skill: hand back the status and findings as plain facts; the caller writes the one reply. Asked for directly by a person: reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | the calls worked |
+| 🟡 Your turn | the token is missing, rejected or lacks repo access: ask for one |
+| 🔴 Stopped | GitHub still refuses after retries |

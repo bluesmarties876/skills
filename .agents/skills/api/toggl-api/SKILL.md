@@ -581,3 +581,7 @@ No hardcoded workspace, user, client, project or tag ids; no billing semantics; 
 routing or aliases; no daily targets or position maths; no ledger or reconciliation; no
 per-client rules. Those are business decisions that belong in workflow skills built on top
 of this one. This skill only talks to the Toggl API.
+
+## Ending
+
+Called by another skill: hand back the status and findings as plain facts; the caller writes the one reply. Asked for directly by a person: reply as [write-run-report](../../meta/write-run-report/SKILL.md) says. A lasting 403 is 🟡 Your turn: ask for a new token.

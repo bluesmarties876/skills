@@ -176,16 +176,16 @@ Lead with the brief you worked from (the styles, and whether collisions were che
 
 ## Output shape
 
-```
-Brief: <styles>; collisions <checked | waived>; <chosen by the user | defaults, no answer>
-Names in use: Maia, Atticus, Quill, Hermes  (+1 seen in threads: x-bot)
-Family: one word, two or three syllables, mythological and human names and evocative nouns; one placeholder ("x-bot")
-Recommendation: <name> — <why>
-Shortlist: <five more, one line each, labelled with their style when there is more than one>
-Blocked: <candidates the check blocked, and what they collided with, or "none">
-Dropped: <candidates lost to the voice or safety checks, with the reason, or "none">
-Question: pick one, more like one of these, or a different style?
-```
+Each round's presentation is a 🟡 Your turn reply: the names you can see and whether these were defaults, your pick and why, the other five, any left out and why ("too close to Quill", never a verdict word), then the question: pick one, more like one of these, or a different style. The family pattern and full check results go in the run's working notes.
+
+## Ending
+
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟡 Your turn | a round is presented and no name is picked; or the rename or new agent waits on their approval (Step 8). Unattended: the shortlist goes through `follow-ups` |
+| 🟢 Finished | the chosen name is applied and confirmed, or they only wanted ideas and said they are done |
 
 ## Script
 

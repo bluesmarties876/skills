@@ -15,13 +15,13 @@ The log it writes **stays in the workspace**. It may use the workspace's own ter
 
 | Hook | What a companion adds | Without one |
 | --- | --- | --- |
-| `feedback-log` | where this workspace keeps the log, and how to append to it (a file, an agent store, a table) | stop with `NEEDS_CONTEXT`, naming the hook. The ally sees the missing heartbeat and reports the unfilled hook |
+| `feedback-log` | where this workspace keeps the log, and how to append to it (a file, an agent store, a table) | stop with 🟡 Your turn, asking for the hook to be filled. The ally sees the missing heartbeat and reports the unfilled hook |
 
 ## Inputs
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| This agent's own threads, with their last-changed times | the review | stop with `BLOCKED`: the host does not let this agent read its own history. Write the heartbeat with `threads_seen: unreadable` so the ally can tell |
+| This agent's own threads, with their last-changed times | the review | stop with 🔴 Stopped: the host does not let this agent read its own history. Write the heartbeat with `threads_seen: unreadable` so the ally can tell |
 | The log, through the `feedback-log` hook | the high-water mark and the entries | see the hook |
 | The names of the skills this agent can use | naming the skill a thread used | log `skill: unknown` and say so in the note |
 
@@ -47,7 +47,7 @@ Read the whole thread, not only its last message. A person who came back hours l
 | `thread` | the host's id for the thread (local only) |
 | `reviewed_at` | now |
 | `skill` | the core skill the thread used, or `none` |
-| `status` | the skill's final status line if it printed one (`DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`); `not-selected` if a skill fitted but was not used; `no-skill` if nothing fitted |
+| `status` | the status on the first line of the skill's last reply, as its record value: `finished`, `your-turn`, `waiting` or `stopped` ([CONVENTIONS.md](../../../../CONVENTIONS.md#ending-a-run)); `not-selected` if a skill fitted but was not used; `no-skill` if nothing fitted |
 | `kind` | `ok`, or one of `gap`, `failure`, `not-selected`, `dissatisfied`, `declined` (defined below) |
 | `reason` | for `dissatisfied` and `declined`, the closest of the reasons below |
 | `signal` | `explicit` if the person said it, `inferred` if you read it from what they did |
@@ -56,11 +56,13 @@ Read the whole thread, not only its last message. A person who came back hours l
 
 A thread already in the log that changed again is re-read, and its entry is **updated**, not duplicated.
 
+A reply that still uses a retired code is logged by what the code means now: `DONE` as `finished`, `DONE_WITH_CONCERNS` and `NEEDS_CONTEXT` as `your-turn`, `BLOCKED` as `stopped`. A thread whose last reply is 🟡 Your turn and that the person never answered is logged `your-turn`; on its own that is not dissatisfaction, since the person may have done the step without saying so.
+
 | Kind | When |
 | --- | --- |
 | `ok` | the work was done and accepted. Most entries are this, and that is useful: it is the base rate |
 | `gap` | the person needed something no skill covered |
-| `failure` | a skill's run stopped (`BLOCKED`, `NEEDS_CONTEXT`) and the need was not met |
+| `failure` | a skill's run ended 🔴 Stopped and the need was not met |
 | `not-selected` | a skill fitted the request, and it was not used |
 | `dissatisfied` | the run finished, but the person rejected the output, redid it, or corrected it heavily |
 | `declined` | the person chose not to use a skill that was offered or started |
@@ -83,12 +85,13 @@ A quiet agent writes heartbeats with `threads_seen: 0`, and that is healthy. A m
 
 ## Ending
 
-| Status | Means |
+Reply as [write-run-report](../write-run-report/SKILL.md) says. The run is usually unattended, so the reply is its record.
+
+| Status | When |
 | --- | --- |
-| `DONE` | Every changed thread has an entry, and the heartbeat is written. |
-| `DONE_WITH_CONCERNS` | Written, but some threads could not be read in full. Say how many. |
-| `BLOCKED` | The history could not be read, or the log could not be written. Write the heartbeat if the log can be written at all. |
-| `NEEDS_CONTEXT` | The `feedback-log` hook is unset. |
+| 🟢 Finished | Every changed thread has an entry, and the heartbeat is written. Threads that could not be read in full are a Good to know: say how many. |
+| 🟡 Your turn | The `feedback-log` hook is unset: ask for it to be filled. |
+| 🔴 Stopped | The history could not be read, or the log could not be written. Write the heartbeat if the log can be written at all. |
 
 ## Known limits
 

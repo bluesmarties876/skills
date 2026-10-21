@@ -39,13 +39,13 @@ person or with their approval.
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The page: a URL, or its HTML saved as a file | everything | interactive: ask. Unattended: `NEEDS_CONTEXT`, naming it |
-| Target query | steps 2 to 5 | propose one from the page's H1 and main topic. Interactive: the person confirms it. Unattended: use it, and the report says it was assumed |
+| The page: a URL, or its HTML saved as a file | everything | interactive: ask. Unattended: 🟡 Your turn, asking for it |
+| Target query | steps 2 to 5 | propose one from the page's H1 and main topic. Interactive: the person confirms it. Unattended: use it, and ask them to confirm it as a **Decide** |
 | Brand name as it should appear | step 4, the `brand` field | take it from the current title or `og:site_name`; if neither has it, write titles without a brand and say so |
 | Performance data: a search-performance export (queries, impressions, clicks, click-through rate, position), an SEO tool export, keyword volumes, or any other data the person can provide | step 3 | diagnose from the page and the results alone, and say no performance data was used |
 
-Tag every claim in the report with where it came from: `page`, `results`, `performance
-data`, `script`, or `assumed`.
+Note where each claim came from (`page`, `results`, `performance data`, `script`, or
+`assumed`) in the working notes; the reply names only what was assumed.
 
 ## Safety
 
@@ -65,8 +65,8 @@ data`, `script`, or `assumed`.
 
 | Hook | What a companion adds | Without one |
 | --- | --- | --- |
-| `meta-copy-rules` | this workspace's house rules: brand suffix and separator, tone, banned or required words | use Google's branding guidance (brand once, at the start or end, after a separator), and say in the report that no house rules were applied |
-| `search-data` | where this workspace gets search results, performance exports or keyword data | use public search results and whatever the person provides, and say in the report which |
+| `meta-copy-rules` | this workspace's house rules: brand suffix and separator, tone, banned or required words | use Google's branding guidance (brand once, at the start or end, after a separator), and note in the working notes that no house rules were applied |
+| `search-data` | where this workspace gets search results, performance exports or keyword data | use public search results and whatever the person provides, and note which in the working notes |
 
 How a hook is reached is in [Companion skills](../../../../CONVENTIONS.md#companion-skills).
 
@@ -77,7 +77,7 @@ standard library only, reads no credential, and makes one network call: `fetch` 
 If it is missing, get the whole skill folder again rather than rewriting it. Run
 `python3 scripts/check_meta.py --selftest` once in a new environment; it ends
 `PASS: 0 failing`, and anything else means its verdicts cannot be trusted, so stop with
-`BLOCKED`.
+🔴 Stopped.
 
 ```
 python3 scripts/check_meta.py fetch https://www.example.com/pricing
@@ -91,10 +91,10 @@ python3 scripts/check_meta.py --selftest
 | Exit | Means | Do |
 | --- | --- | --- |
 | 0 | a result, printed as JSON | read it, including `warnings` |
-| 1 | `--selftest` failed | stop with `BLOCKED` |
+| 1 | `--selftest` failed | stop with 🔴 Stopped |
 | 2 | bad usage or bad input; stderr carries a line containing `error:` (table below) | fix that and run again |
-| 3 | a defect in the script; stderr says `internal error: ...` | stop with `BLOCKED`, quoting the message |
-| 4 | the URL could not be fetched; stderr says `fetch failed: <reason>`, such as `fetch failed: HTTP 403 from https://www.example.com/pricing` or `fetch failed: not an HTML page: content type is application/pdf` | ask the person to save the page's HTML as a file and run `fetch` on that. Unattended: `BLOCKED` |
+| 3 | a defect in the script; stderr says `internal error: ...` | stop with 🔴 Stopped, noting the message |
+| 4 | the URL could not be fetched; stderr says `fetch failed: <reason>`, such as `fetch failed: HTTP 403 from https://www.example.com/pricing` or `fetch failed: not an HTML page: content type is application/pdf` | ask the person to save the page's HTML as a file and run `fetch` on that. Unattended: 🔴 Stopped |
 
 Every exit-2 message names what to fix:
 
@@ -143,9 +143,9 @@ Read every warning. Some end or change the run:
 
 | Warning contains | Do |
 | --- | --- |
-| `noindex` | the page is kept out of search, so its metadata never shows. Report that and end `DONE_WITH_CONCERNS`; ask whether the noindex is intended |
+| `noindex` | the page is kept out of search, so its metadata never shows. Ask whether the noindex is intended, as a **Decide** |
 | `nosnippet` | Google shows no description. Still write the title; write a description only for other uses, and say so |
-| `no title and no h1 in the raw HTML` | the page is built in the browser. Ask for the rendered HTML saved as a file, and fetch that. Unattended: `BLOCKED` |
+| `no title and no h1 in the raw HTML` | the page is built in the browser. Ask for the rendered HTML saved as a file, and fetch that. Unattended: 🔴 Stopped |
 | `no h1 element`, or more than one h1 | Google uses the main heading to judge the title. Recommend one clear h1 in the report, match the title to it, and in step 4 put it in the candidates file as `page.h1`, saying in the report that it is recommended, not live |
 | `redirected to` | the fetched page is the final address. Confirm it is the page meant |
 
@@ -169,8 +169,8 @@ Angle: free trial or price stated; "for small teams" or a team size
 
 If the page is a different type from what ranks (a product page against a page of
 "best X" lists), the title cannot fix that. Say so, and propose a query this page can win.
-Interactive: the person picks. Unattended: keep the original query and end
-`DONE_WITH_CONCERNS`, naming the mismatch.
+Interactive: the person picks. Unattended: keep the original query and send the choice through `follow-ups` as a
+**Decide**, naming the mismatch.
 
 Check whether another page on the same site already competes for the query: one that
 appears in the results above this page, or one that carries the same content (a section
@@ -178,11 +178,10 @@ copied from a product page, say). Search the site for the query if your tool all
 for example `site:example.com <query>`. If one does, two pages are splitting the same
 searches. Say which page should own the query, and aim this page at a narrower query it
 serves on its own (a team page at "who runs the program", say). Interactive: the person
-confirms. Unattended: aim at the narrower query and end `DONE_WITH_CONCERNS`, naming the
-other page.
+confirms. Unattended: aim at the narrower query and ask them to confirm it as a **Decide**,
+naming the other page.
 
-If you cannot see search results at all, skip this step, say so in the report, and end
-`DONE_WITH_CONCERNS` at best.
+If you cannot see search results at all, skip this step and say so as a **Good to know**.
 
 ### 3. Diagnose the current tags
 
@@ -253,7 +252,7 @@ Each candidate gets one verdict: `OK` (no issues), `WARN` (at least one warning,
 failure) or `FAIL` (at least one failure). Never recommend a `FAIL`. A `WARN` can be the right
 choice when the warning is deliberate: say which warning and why. Revise and re-check until
 at least one candidate is `OK`, or every remaining warning is explained. After three rounds
-without one, end `DONE_WITH_CONCERNS` and report the best candidate with its warnings.
+without one, recommend the best candidate and tell the person its warnings.
 
 | Code | Level | Means | Fix |
 | --- | --- | --- | --- |
@@ -293,35 +292,38 @@ Then say how to tell whether it worked:
 
 ### 7. Report
 
+Putting the pair live is the person's step, or the page owner's, so the reply is 🟡 Your
+turn:
+
 ```
-Page: https://www.example.com/
-Query: expense tracking for small teams (confirmed by the person)
-Intent: product and landing pages; single product; angle is free trial and team size  [results]
+🟡 **Your turn** — a better search title and description for your home page.
 
-Current title: "Home | Ledgerly" (vague; disagrees with the h1)  [page]
-Current description: keyword list, "expense" three times  [page]
+Google shows your home page as "Home | Ledgerly", which says nothing about what you sell.
+Pages ranking for "expense tracking for small teams" lead with a trial and team size.
 
-Recommended
-  Title (60): Expense Tracking for Small Teams, Set Up in a Day | Ledgerly   OK  [script]
-  Description (147): Expense tracking for small teams of 5 to 50: snap receipts, approve
-    claims on your phone, sync to your accounts. Free 14-day trial, no card needed.
-  Why: matches the h1 and the query, and states the trial and team size most results lead with.
-  Runner-up: candidate 1, held back by a short title and a stuffed description.
+**Title:** Expense Tracking for Small Teams, Set Up in a Day | Ledgerly
+**Description:** Expense tracking for small teams of 5 to 50: snap receipts, approve
+claims on your phone, sync to your accounts. Free 14-day trial, no card needed.
 
-Measure: click-through rate for the query, four weeks before and after, at like positions.
-Approve: the page owner.
+**What to do:**
+1. Ask whoever edits your website to put these on the home page.
+
+(question) Live? I'll then save a reminder to compare clicks in four weeks. Done · Something went wrong · Not now
 ```
 
-Then list what was not checked: no performance data, results seen from one location and
-device only, the brand assumed, house rules not applied. Say whether each companion was
-used. End with a status line:
+A choice for the person to decide (assumed query, type mismatch, competing page, noindex)
+comes before the question; unattended, send it and the step through `follow-ups`. The
+runner-up, verdicts and gaps go in the working notes. After *Done*, record the measurement through `follow-ups`.
+
+## Ending
+
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
 
 | Status | When |
 | --- | --- |
-| `DONE` | a recommended pair the script marked `OK`, an intent read from the results, and the query confirmed or supplied |
-| `DONE_WITH_CONCERNS` | a recommendation, but the query was assumed, results could not be seen, the page type mismatches the intent, the recommendation carries a warning, or the page is noindex. Name which |
-| `BLOCKED` | the page cannot be read (fetch failed, or the page is built in the browser and no rendered HTML was given) unattended, or the script fails its selftest or exits 3 |
-| `NEEDS_CONTEXT` | no page was given. Name it |
+| 🟡 Your turn | a recommendation is ready to put live, or a choice above is theirs; or no page was given: ask for it |
+| 🔵 Waiting | they confirmed it is live, and the measurement is recorded through `follow-ups` |
+| 🔴 Stopped | work stopped: the page cannot be read unattended, or the script fails its selftest or exits 3 |
 
 ## Files
 

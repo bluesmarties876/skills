@@ -7,13 +7,13 @@ description: A maintainer workspace's scheduled pass for local skills the core d
 
 Finds local skills in a maintainer's workspace that the core does not hold yet, checks whether each belongs in the core, and offers the ones that pass for publishing. It decides what is *worth* publishing. `publish-local-skill-to-repo` does the publishing, and `collapse-skill-to-pointer` turns the local copy into a pointer afterwards.
 
-Runs only in a maintainer's workspace. [PURPOSE.md](../../../../PURPOSE.md) rules 2 and 3 keep a client ally from writing to the core or sending a skill body out of her workspace, so a client workspace is out of scope. Stop with `NEEDS_CONTEXT` if the run cannot tell that this workspace is a maintainer's.
+Runs only in a maintainer's workspace. [PURPOSE.md](../../../../PURPOSE.md) rules 2 and 3 keep a client ally from writing to the core or sending a skill body out of her workspace, so a client workspace is out of scope. If the run cannot tell that this workspace is a maintainer's, stop with 🟡 Your turn, asking.
 
 Works on GitHub through its API, from a skill host that exposes `GetAgentConfig`, `SearchKnowledge`, `GetKnowledgeDetails` and `RunWithCredentials` for the workspace's skills, their content and the GitHub credential.
 
 ## Repo facts
 
-Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`, naming the setting, if one is missing.
+Read from the core's agent instructions (`AGENTS.md`). If one is missing, stop with 🟡 Your turn, asking for that setting.
 
 | Setting | Used for |
 | --- | --- |
@@ -24,17 +24,18 @@ Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`
 | Input | Needed for | Without it |
 | --- | --- | --- |
 | The core repo, as `<owner>/<repo>` | the inventory | read it from the local resolver's name, `resolve-repo-skill-<owner>/<repo>`; more than one resolver, ask |
-| The repo's recursive tree, read once | the inventory, and the overlap test | stop with `BLOCKED`; an unreadable repo is not an empty one |
+| The repo's recursive tree, read once | the inventory, and the overlap test | stop with 🔴 Stopped; an unreadable repo is not an empty one |
 | `unpointed_skills.py`, from `list-unpointed-skills` in the core | the inventory | fetch that skill's folder from the core; never rewrite it here |
 
-## Outcomes
+## Ending
 
-| Status | When | What has happened |
-| --- | --- | --- |
-| `DONE` | the report is out, and every yes was handed on | nothing written by this skill |
-| `DONE_WITH_CONCERNS` | the report is out, but a candidate failed a test, a hand-off stopped, or the local listing may be incomplete | nothing written by this skill |
-| `NEEDS_CONTEXT` | a repo fact, the repo, or the workspace's maintainer status is unknown | nothing read past that point |
-| `BLOCKED` | the repo cannot be read, or its tree is truncated | nothing reported as a clean result |
+Reply as [write-run-report](../write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | every candidate was offered and each yes handed on; the possibly incomplete listing is a Good to know |
+| 🟡 Your turn | a candidate awaits a yes, a failing candidate's fix is theirs to choose, a collapse waits on them merging the publish pull request, or a hand-off stopped; or a repo fact, the repo or maintainer status is unknown (ask; read nothing further) |
+| 🔴 Stopped | the repo cannot be read, or its tree is truncated |
 
 ## Safety
 
@@ -53,11 +54,11 @@ Read the core's recursive tree at the `Base branch` and run:
 python3 unpointed_skills.py inventory --tree-file /tmp/tree.json --json > /tmp/inv.json
 ```
 
-Exit `3` is a truncated tree or an empty inventory: stop with `BLOCKED`. Treating a cut listing as complete would make every skill past the cut look unpublished.
+Exit `3` is a truncated tree or an empty inventory: stop with 🔴 Stopped. Treating a cut listing as complete would make every skill past the cut look unpublished.
 
 ### 2. List the local skills
 
-There is no reliable way to list every local skill. `GetAgentConfig` returns the skills attached to the agent, and `SearchKnowledge` is relevance-ranked and capped. Take the union of both: the attached skills, plus `SearchKnowledge` runs over broad subjects (skills, workflow, API, report, publish). Note what you searched. The report states that the listing may be incomplete, every time.
+There is no reliable way to list every local skill. `GetAgentConfig` returns the skills attached to the agent, and `SearchKnowledge` is relevance-ranked and capped. Take the union of both: the attached skills, plus `SearchKnowledge` runs over broad subjects (skills, workflow, API, report, publish). Note your searches. The report states that the listing may be incomplete, every time.
 
 Drop every name that is already a leaf name in the inventory: that skill is published, and whether it is a pointer is `list-unpointed-skills`' question. Drop pointers to another repo as well: a body that is one `Execute` line naming a resolver is a pointer, not a method.
 
@@ -77,10 +78,10 @@ Do not reshape a failing candidate until it passes. Report it with the reason, a
 
 ### 4. Offer, then hand on
 
-Report first: each passing candidate with its proposed category folder, then each failing one with the test it failed and why, then the incompleteness line.
+Tell the person which skills could join the shared library and where, which could not and why, and that the listing may be incomplete.
 
-- **Interactive.** Ask about each passing candidate, one at a time. For each yes, run `publish-local-skill-to-repo` for that skill. When it ends `LANDED`, the copy is on the ref clients read, so offer `collapse-skill-to-pointer`, as a separate yes. When it ends `PROPOSED`, say the collapse waits until the pull request merges. Any other outcome is reported as it came, and the next candidate is offered.
-- **Unattended.** Report and stop. Publishing needs a person.
+- **Interactive.** Ask about each passing candidate, one at a time. For each yes, run `publish-local-skill-to-repo` for that skill. When it ends `LANDED`, the copy is on the ref clients read, so offer `collapse-skill-to-pointer`, as a separate yes. When it ends `PROPOSED`, say the collapse waits until the pull request merges. Any other outcome is explained in plain words, and the next candidate is offered.
+- **Unattended.** Publishing needs a person: send each offer through the `follow-ups` hook and end 🟡 Your turn.
 
 The ref clients read is the `Base branch` until the core's agent instructions name a release ref. Read it there; never assume one.
 

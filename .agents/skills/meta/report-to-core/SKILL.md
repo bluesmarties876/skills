@@ -13,7 +13,7 @@ Works on GitHub through the `github-api` skill: reports are issues on the core r
 
 ## Repo facts
 
-Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`, naming the setting, if one is missing.
+Read from the core's agent instructions (`AGENTS.md`). If one is missing, stop with 🟡 Your turn, asking for that setting.
 
 | Setting | Used for |
 | --- | --- |
@@ -32,11 +32,11 @@ Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`
 | Input | Needed for | Without it |
 | --- | --- | --- |
 | The feedback log, through the hook | the records | see the hook |
-| The core repo, as a folder on disk | checking that a skill name is one the core holds | stop with `NEEDS_CONTEXT`. Fetch it as a tarball through `github-api` |
-| The commit the workspace is synced to | `core_ref` | stop with `NEEDS_CONTEXT` |
+| The core repo, as a folder on disk | checking that a skill name is one the core holds | ask for it. Fetch it as a tarball through `github-api` |
+| The commit the workspace is synced to | `core_ref` | ask for it |
 | This workspace's reporter id | `reporter` | make one with `report.py --new-reporter` and store it through the `feedback-log` hook. Never derive it from a name |
-| A GitHub token with Issues write and Metadata read on the core repo | sending | `--dry-run` only, and stop with `NEEDS_CONTEXT`. The token needs no Contents permission, and should not have it |
-| The list of this workspace's peer agents | heartbeats | stop with `NEEDS_CONTEXT` |
+| A GitHub token with Issues write and Metadata read on the core repo | sending | `--dry-run` only, and ask for it. The token needs no Contents permission, and should not have it |
+| The list of this workspace's peer agents | heartbeats | ask for it |
 
 ## Safety
 
@@ -55,7 +55,7 @@ For each peer, read its last heartbeat's `reviewed_at`. If it is more than two d
 1. Spawn the peer and ask it to run `review-own-threads` now, and to confirm that its daily schedule exists, adding it if not.
 2. Read the heartbeat again.
 
-Only a peer still stale after the repair goes into the day's `heartbeats` with its old date; `report.py` reports it as `kind: failure`, `skill: review-own-threads`. A peer with fresh heartbeats and `threads_seen: 0` is quiet, not broken, and is not reported. A peer whose heartbeat says `threads_seen: unreadable` is reported as `kind: failure` with status `BLOCKED`.
+Only a peer still stale after the repair goes into the day's `heartbeats` with its old date; `report.py` reports it as `kind: failure`, `skill: review-own-threads`. A peer with fresh heartbeats and `threads_seen: 0` is quiet, not broken, and is not reported. A peer whose heartbeat says `threads_seen: unreadable` is reported as `kind: failure` with status `stopped`.
 
 ### 2. Map entries to records
 
@@ -83,7 +83,7 @@ python3 scripts/report.py --selftest
 
 The scripts need Python 3.9 or later and the standard library only. `report.py` imports `record.py` beside it, so copy or fetch the whole `scripts/` folder, never one file. `--reference` points at a different vocabulary file (default: this skill's `reference.md`), and `--json` prints the actions as JSON.
 
-The file's shape is in the script's header. Run `--selftest` once in a new environment; anything but `PASS: 0 failing` means stop with `BLOCKED`. Exit `3` is the validator refusing: read each line, fix or drop the record in step 2, and run again. Three refusals of the same record: drop it and report `DONE_WITH_CONCERNS`.
+The file's shape is in the script's header. Run `--selftest` once in a new environment; anything but `PASS: 0 failing` means stop with 🔴 Stopped. Exit `3` is the validator refusing: read each line, fix or drop the record in step 2, and run again. Three refusals of the same record: drop it, and say so in the reply (Good to know).
 
 | Exit | stderr starts | Recovery |
 | --- | --- | --- |
@@ -92,8 +92,8 @@ The file's shape is in the script's header. Run `--selftest` once in a new envir
 | `2` | `error: no skill folders under:` | `--core` is not the extracted core repo |
 | `2` | `error:` and a file or JSON error | the day's file or `reference.md` is unreadable or not JSON |
 | `3` | `REFUSED: nothing was sent.` and one line per problem | fix or drop the record. A problem says which field, never its value |
-| `1` | `error: GitHub call failed:` | the token or the network; report `BLOCKED` with the message |
-| `4` | (stdout) `rollup not sent:` | the heartbeat issue is missing; `NEEDS_CONTEXT` |
+| `1` | `error: GitHub call failed:` | the token or the network; end 🔴 Stopped, the message in the run's working notes |
+| `4` | (stdout) `rollup not sent:` | the heartbeat issue is missing; 🟡 Your turn |
 
 A `need` is capped at 140 characters, and a GitHub error is quoted to 300 characters.
 
@@ -114,7 +114,7 @@ What it does for each distinct finding (skill, kind, reason, and the need for a 
 | an open issue for it | comments the day's count on it, at most once per workspace per day |
 | only a closed issue for it | opens a new issue that links the closed one: a regression |
 
-On the first run of an ISO week, add `rollup` to the day's file (`week`, `threads`, `peers`). The script comments it on the one open issue with the heartbeat label, once per week. Exit `4` means that issue does not exist; a maintainer creates it once, and you report `NEEDS_CONTEXT`.
+On the first run of an ISO week, add `rollup` to the day's file (`week`, `threads`, `peers`). The script comments it on the one open issue with the heartbeat label, once per week. Exit `4` means that issue does not exist; a maintainer creates it once, and you end 🟡 Your turn.
 
 ### 5. Move the mark
 
@@ -122,12 +122,14 @@ After a run that exits `0`, record today as your high-water mark through the `fe
 
 ## Ending
 
-| Status | Means |
+Reply as [write-run-report](../write-run-report/SKILL.md) says. It usually runs unattended: send what the person must do through `follow-ups`.
+
+| Status | When |
 | --- | --- |
-| `DONE` | Every non-`ok` entry was sent or deliberately dropped, and the heartbeats are checked. |
-| `DONE_WITH_CONCERNS` | Sent, but something was dropped, a peer could not be repaired, or the rollup was not sent. Name which. |
-| `BLOCKED` | The selftest failed, or GitHub refused the call. Say what came back. |
-| `NEEDS_CONTEXT` | A repo fact, the token, the core folder, `core_ref` or the peer list is missing, or the heartbeat issue does not exist. |
+| 🟢 Finished | Every non-`ok` entry was sent or deliberately dropped, and the heartbeats are checked. Mention drops (Good to know). |
+| 🔵 Waiting | Sent, but a peer could not be repaired; the core now has its failure. |
+| 🟡 Your turn | A repo fact, the token, the core folder, `core_ref` or the peer list is missing, or the heartbeat issue does not exist. |
+| 🔴 Stopped | The selftest failed, or GitHub refused the call. Say plainly what failed. |
 
 ## Known limits
 

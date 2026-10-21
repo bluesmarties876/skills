@@ -21,12 +21,12 @@ credentials, and `UpdateSkillAndScripts` to write an edit back to a local skill.
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The skill, by name or id | everything | `NEEDS_CONTEXT` |
-| The repo, as `<owner>/<repo>` | everything | `NEEDS_CONTEXT` |
+| The skill, by name or id | everything | 🟡 Your turn, asking for it |
+| The repo, as `<owner>/<repo>` | everything | 🟡 Your turn, asking for it |
 | The change to make, or the person to ask | the edit | ask what should change, and stop until told |
-| The repo's own instruction files | the folder a skill goes in, the frontmatter it wants, and the base branch | copy an existing skill's shape; with neither, `NEEDS_CONTEXT` |
-| The repo's base branch | the read in step 2, and the write in step 7 | read it from the repo's own instruction files, which is where a repo states it; with none named, assume `main` and say so in the report |
-| `skill-repo-write`, and the resolver from step 2 | the write, and finding the skill at all | `NEEDS_CONTEXT`, naming the skill that could not be read |
+| The repo's own instruction files | the folder a skill goes in, the frontmatter it wants, and the base branch | copy an existing skill's shape; with neither, 🟡 Your turn, asking for the layout |
+| The repo's base branch | the read in step 2, and the write in step 7 | read it from the repo's own instruction files, which is where a repo states it; with none named, assume `main` and tell the person |
+| `skill-repo-write`, and the resolver from step 2 | the write, and finding the skill at all | 🟡 Your turn, naming the skill that could not be read |
 
 ## Outcomes
 
@@ -37,13 +37,13 @@ This skill's own, before the core is reached:
 | `STOP_NOT_IN_REPO` | the repo does not hold this skill | nothing written; it is a publish, not an update |
 | `STOP_NEEDS_CLEANUP` | account-specific content or a secret was found | the repo is untouched, and the local edit stands |
 | `STOP_TESTS_FAILED` | the skill's own tests fail | the repo is untouched, and the local edit stands |
-| `NEEDS_CONTEXT` | an input above is missing, a required skill is not installed, or a choice needs a person | nothing written |
-| `STOP_BREAKS_DEPENDENTS` | a skill that depends on this one would break | nothing written; the report names the dependent and what breaks |
-| `BLOCKED` | the resolver refuses or errors, so the repo copy cannot be read | nothing written; the message is reported as it came |
+| 🟡 Your turn | an input above is missing, a required skill is not installed, or a choice needs a person | nothing written |
+| `STOP_BREAKS_DEPENDENTS` | a skill that depends on this one would break | nothing written; the dependent and what breaks are named |
+| 🔴 Stopped | the resolver refuses or errors, so the repo copy cannot be read | nothing written; the message is passed on as it came |
 
 Once the core is reached, its outcomes apply, and `STOP_STALE_BASE` matters most here:
 the copy being replaced changed since this skill read it, and nothing was written. Step 7
-maps every one of the core's outcomes to what this skill reports.
+maps every one of the core's outcomes to what the person must understand.
 
 ## Which copy is the source of truth
 
@@ -54,7 +54,7 @@ depends on the local copy's state, and getting it wrong is how the two drift apa
 | --- | --- | --- |
 | A pointer, whose stored body is a single line naming a resolver skill | the repo copy, which is now the home | method stays in the repo; check local runtime registration when runtime requirements change |
 | A full copy of the skill | the local copy | the repo copy is written from it, and the two match again |
-| An empty or whitespace-only stored body | neither, because there is no copy to edit | `NEEDS_CONTEXT`, naming the skill |
+| An empty or whitespace-only stored body | neither, because there is no copy to edit | 🟡 Your turn, naming the skill |
 
 Editing the repo copy while a full local copy exists leaves the local copy ahead of the
 repo, which the collapse check then reports as drift. Editing the local copy when it is
@@ -79,29 +79,28 @@ meant.
 
 The whole run, with the call each step makes. The detail is below.
 
-1. **Take the inputs** — skill, repo, change. A missing one is `NEEDS_CONTEXT`.
+1. **Take the inputs** — skill, repo, change. A missing one is 🟡 Your turn.
 2. **Find the skill, read its folder** — `resolve-repo-skill-<owner>/<repo>`, then
    `get_files.py` into `/tmp/<name>-base/`. Absent, ambiguous or unreadable stops here.
 3. **Find its dependents** — `repo_browse.py search`, then `tree`. A broken dependent is
    `STOP_BREAKS_DEPENDENTS`.
 4. **Pick the copy to edit** — a pointer defers to the repo copy; a full copy is edited
-   locally; an empty body is `NEEDS_CONTEXT`.
+   locally; an empty body is 🟡 Your turn.
 5. **Make the edit** — `UpdateSkillAndScripts` locally, or straight into the repo copy.
 6. **Run the checks** — the `cleanup` scanner, then the `checks` skill's analyzer. A failed
    test is `STOP_TESTS_FAILED`.
 7. **Hand it over** — `stage_skill.py`, the guard (`verify_write.py`), `commit_files.py`.
    The core's outcome is the run's status.
 8. **Compare the copies** — the body, and each script by filename.
-9. **Report** — the status, the route, the commit, the checks.
+9. **Reply** — what changed, and what the person must do or know.
 
 ## Steps
 
 ### 1. Resolve the inputs
 
-Take the skill, the repo and the change. A missing skill or repo is `NEEDS_CONTEXT`. With
-no stated change, ask what should change and stop: this skill does not invent edits, and the
-run ends `NEEDS_CONTEXT` carrying the question it asked, because the change is the one input
-only the person can supply.
+Take the skill, the repo and the change. A missing skill or repo is 🟡 Your turn, asking for
+it. With no stated change, ask what should change and stop: this skill does not invent edits,
+and the run ends 🟡 Your turn with that question, because only the person can supply it.
 
 ### 2. Confirm the repo holds it, and read the copy being replaced
 
@@ -142,20 +141,18 @@ also in this folder:
 - **Two folders share the name** — not "not found". The resolver exits the same way for an
   ambiguous name as for a missing one, and its message lists what is there, so read the
   message before taking the branch above. Which folder is meant is the person's answer, not
-  a guess, so an ambiguous name is `NEEDS_CONTEXT` with both candidates named.
+  a guess, so an ambiguous name is 🟡 Your turn with both candidates named.
 - **Found** — fetch the skill's folder from the base branch, now, and keep it. That copy
   is the base the core will guard against, and it is also what the change is applied to
   when the repo is the source of truth.
-- **The resolver refuses or errors** — `BLOCKED`, with its own message. A truncated
+- **The resolver refuses or errors** — 🔴 Stopped, with its own message. A truncated
   listing or a rejected credential is not a missing skill.
-- **No such resolver skill is installed** — `NEEDS_CONTEXT`, naming it. A skill that
+- **No such resolver skill is installed** — 🟡 Your turn, naming it. A skill that
   cannot be read is not a skill that is absent from the repo.
 
-The resolver returns the folder to read, not its contents — only its `--read` flag prints
-the skill's `SKILL.md`. Read the rest of the folder with the repo skill's own reader,
-`github-api`'s `get_files.py`, through `RunWithCredentials("github-api", ...)`, which lends
-its credential for the length of the call. `get_files.py` mirrors the repo structure under
-`--out-dir`, and that mirrored layout is exactly what the core's guard reads in step 7:
+Read the rest of the folder with `github-api`'s `get_files.py`, through
+`RunWithCredentials("github-api", ...)`, which lends its credential for the call. It mirrors
+the repo structure under `--out-dir`, which is exactly what the core's guard reads in step 7:
 
 ```
 python3 get_files.py --owner example-owner --repo example-repo --ref main \
@@ -164,26 +161,24 @@ python3 get_files.py --owner example-owner --repo example-repo --ref main \
     --path meta/example-skill/scripts/example_skill.py
 ```
 
-That `--ref` is the base branch, and it comes from the repo's own instruction files rather
-than from the sample above. A repo whose default is `master` has no `main` to read, and the
-core's write defaults to `main` as well, so a branch that is assumed rather than read leaves
-step 2 reading one branch and step 7 writing to another. Read the branch, use it in both
-places, and say in the report which one was used.
+That `--ref` is the base branch, from the repo's own instruction files, not the sample. A
+repo whose default is `master` has no `main` to read, and the core's write defaults to
+`main` as well, so an assumed branch leaves step 2 reading one branch and step 7 writing to
+another. Read the branch, use it in both
+places, and record in the working notes which one was used.
 
-`get_files.py` writes each file at its **repo path** under `--out-dir`, so the run above
-leaves the base copies at `/tmp/example-skill-base/meta/example-skill/SKILL.md` and
-`/tmp/example-skill-base/meta/example-skill/scripts/example_skill.py` — the repo path, not
-the bare filename. Step 7's map has to name those paths; a flattened one points at nothing.
+Each file lands at its **repo path** under `--out-dir`, e.g.
+`/tmp/example-skill-base/meta/example-skill/SKILL.md`, not the bare filename. Step 7's map
+has to name those paths; a flattened one points at nothing.
 
-Write the base copies under a scratch directory named for the skill — `/tmp/<name>-base/`
-— and keep them: they are the guard's input. Where step 7 finds that directory gone, re-read
-the folder as this step does rather than handing the core a map with nothing behind it. A
+Keep the base copies under `/tmp/<name>-base/`: they are the guard's input. Where step 7
+finds that directory gone, re-read the folder rather than handing the core an empty map. A
 base copy the guard cannot read is a guard that did not run, and the core says so.
 
 ### 3. Find out what depends on it
 
-Search the repo for the skill's name before changing it. Skills in a library refer to each
-other, in four shapes:
+Search the repo for the skill's name before changing it. Skills refer to each other in
+four shapes:
 
 ```
 a `Companions` row naming it:
@@ -216,22 +211,20 @@ python3 repo_browse.py tree --owner example-owner --repo example-repo --recursiv
 ]
 ```
 
-`tree` answers with `sha`, `truncated` and `entries`, and `truncated` is the one to watch:
-when it is `true` the listing is partial, and a partial listing and an empty one look
-identical in a report while meaning opposite things. `search` carries no such flag — it caps
-by `--max-pages` — so raise that rather than reading a short page as the whole answer. Say
-which you used, and whether the result was complete.
+`tree` answers with `sha`, `truncated` and `entries`; watch `truncated`: when `true` the
+listing is partial, which looks like an empty one while meaning the opposite. `search` carries no such flag — it caps
+by `--max-pages` — so raise that rather than reading a short page as the whole answer.
+Record which you used and whether it was complete; an incomplete search is good to know,
+so tell the person.
 
-Report what you find, and read any skill that depends on this one before deciding the
-change is safe. A change to a skill other skills call reaches all of them, and a change to
+Read any skill that depends on this one before deciding the change is safe. A change to a skill other skills call reaches all of them, and a change to
 a skill that reads a setting by name can break every skill that declares that hook.
 
 Where reading a dependent shows the change would break it, stop with
 `STOP_BREAKS_DEPENDENTS`, and name the dependent and the thing that breaks. That is a stop
 rather than a dead end: the change can go ahead once the dependent is updated, or once the
-change is narrowed so it no longer reaches it. Which of those it should be is the person's
-call, so the report states the break and leaves the choice open rather than picking for
-them.
+change is narrowed so it no longer reaches it. That is the person's call: end 🟡 Your turn
+with it as a **Decide**, the break described in plain words, rather than picking for them.
 
 ### 4. Work out which copy to edit
 
@@ -245,24 +238,23 @@ A pointer body is one line and nothing else:
 Execute resolve-repo-skill-example-owner/example-repo
 ```
 
-An empty or whitespace-only stored body is neither: it is `NEEDS_CONTEXT`, because there is
+An empty or whitespace-only stored body is neither: it is 🟡 Your turn, because there is
 no copy to edit and no repo copy to defer to.
 
 Say which one you found, and why, before editing anything.
 
 ### 5. Apply the change
 
-Make the change to the copy from step 4, and to nothing else. Keep the skill's name, its
-folder and its declared scripts as they are unless the change is specifically about one of
-them, because the name is the skill's identity and the folder is how everything refers to
-it.
+Make the change to the copy from step 4, and to nothing else. Keep the skill's name, folder
+and declared scripts unless the change is about one of them: the name is its identity and
+the folder is how everything refers to it.
 
 When the local copy is a full copy, the edit lands there, through the host's skill-update
 call — `UpdateSkillAndScripts`, given the skill's id and the new body, description or tags.
 That is the local state step 8 compares against, so the local copy must carry the edit
 before the core writes anything. Where the host holds the update as a draft until the person
 confirms it, the repo write waits too. If the confirmation never comes, the run ends
-`NEEDS_CONTEXT` naming the unconfirmed draft, the repo untouched and the draft standing —
+🟡 Your turn, asking them to save the unconfirmed draft, the repo untouched and the draft standing —
 and this skill never confirms its own draft to get past the wait.
 
 Where the local copy is a pointer, edit the method in the repo copy fetched in step 2.
@@ -270,8 +262,8 @@ If scripts or credential-wrapper use are added or removed, inspect its local reg
 against the [Hyperagent runtime contract](../create-pointer-skill/hyperagent-runtime.md).
 A newly runtime-required pointer needs a registered no-op credential_anchor.py, using a
 host update whose documentation remains the exact one-line pointer. Keep slots on their
-credential-owning skill. Report a required host draft separately from the repo write;
-a landed repo change does not prove the local runtime update has been saved. Do not
+credential-owning skill. A required host draft is its own **Do now**, separate from the
+repo write: a landed repo change does not prove the local runtime update has been saved. Do not
 remove an anchor or credential slots merely because one script was removed: check all
 remaining uses, and ask before deleting unknown local content.
 
@@ -288,8 +280,8 @@ python3 agnostic_scan.py --root /tmp/stage/meta/example-skill \
     --exclude __pycache__ --format markdown
 ```
 
-It groups findings into five categories, one table row each, so the report can quote the
-row rather than the scan:
+It groups findings into five categories, one table row each, so you can quote the row
+rather than the scan:
 
 ```
 ## identifier — Hardcoded ids (workspace, user, client, project, tag, tenant).
@@ -306,8 +298,8 @@ only universal patterns were matched. Pass that on rather than reading it as cle
 
 Confirmed account-specific content, meaning a client name, a workspace id, a personal path,
 a house rule or a hard-coded secret, is `STOP_NEEDS_CLEANUP`. Where no scanner can be found
-at all, say the check did not run and ask whether to carry on; with nobody present,
-`NEEDS_CONTEXT`.
+at all, say the check did not run and ask whether to carry on; unattended, 🟡 Your turn,
+the question sent through `follow-ups`.
 
 Then run the checks the `checks` hook names, which for a skills repo is the quality
 analyzer, and any tests the skill declares. A skill that ships a selftest gets it run: a
@@ -315,10 +307,10 @@ failing test is `STOP_TESTS_FAILED`. A finding the analyzer reports is worth rea
 than obeying: say what it found, and write or stop on the person's call.
 
 Both of these run after step 5, so a stop here leaves the repo untouched and the local copy
-already carrying the edit. Say that plainly in the report: which check stopped the run, and
+already carrying the edit. Tell the person plainly what problem stopped the run, and
 that the local copy is now ahead of the repo until the edit is either fixed and written or
 withdrawn. Do not revert the local edit to tidy the state up — a silent revert discards the
-person's work, and the report is what makes the drift visible instead.
+person's work, and the reply is what makes the drift visible instead.
 
 ### 7. Hand it to the core
 
@@ -329,8 +321,7 @@ publishing a new one.
 
 The core takes its inputs as **flags and a manifest**, not as a key/value block.
 `stage_skill.py` and `commit_files.py` are `skill-repo-write`'s own scripts, in that skill's
-folder; its staging script writes the folder the repo expects and the manifest the write
-takes:
+folder; staging writes the folder the repo expects and the manifest the write takes:
 
 ```
 python3 stage_skill.py --name example-skill \
@@ -345,9 +336,8 @@ python3 stage_skill.py --name example-skill \
 python3 commit_files.py --manifest /tmp/stage-manifest.json
 ```
 
-The base copies take a third call of their own: the guard, which is `skill-repo-write`'s own
-`verify_write.py`, in that skill's folder, run before the write and passed
-`--compare <repo path>=<local path>`:
+The base copies feed the guard, `skill-repo-write`'s own `verify_write.py`, in that skill's
+folder, run before the write with `--compare <repo path>=<local path>`:
 
 ```
 python3 verify_write.py --readback-dir /tmp/current \
@@ -386,25 +376,23 @@ removed         none, or the repo paths this change deletes
 commit message  Update example-skill skill
 ```
 
-The core's own default commit message reads `Add <name> skill`, so an update passes
-`Update <name> skill` explicitly. With no base copies the guard is skipped, and the core
-says so rather than pretending it ran.
+The core's default commit message is `Add <name> skill`, so pass `Update <name> skill`.
+With no base copies the guard is skipped, and the core says so.
 
-There is no delivery choice to make and none is asked for. The repo's rules decide, and
-the attempt is how they are discovered.
+No delivery choice is asked for: the repo's rules decide, discovered by the attempt.
 
-The core ends in one of eight outcomes. What each one means for this skill's report:
+The core hands back one of eight outcomes. What each means for the person, in plain words:
 
-| The core ends | What this skill reports |
-| --- | --- |
-| `LANDED` | the commit, and that the change is in place on the base branch |
-| `PROPOSED` | the branch and the pull request, and that the change is unmerged and waiting for whoever merges it |
-| `STOP_REFUSED` | the refusal reason, and that nothing was written |
-| `STOP_STALE_BASE` | which path moved since step 2 read it, and that the edit must be re-read and re-applied |
-| `STOP_SCOPE` | which paths the commit touched that nobody intended, and that a lost update is suspected |
-| `STOP_VERIFY_FAILED` | which committed files differ from what was staged, and that the commit exists anyway |
-| `NEEDS_CONTEXT` | the input the core found missing, named |
-| `BLOCKED` | the error as it came, because the repo could not be read or written |
+| The core ends | Status | What the person must understand |
+| --- | --- | --- |
+| `LANDED` | 🟢 Finished | the change is in effect |
+| `PROPOSED` | 🟡 Your turn | the change is ready on GitHub but won't take effect until they merge the pull request (linked) |
+| `STOP_REFUSED` | 🔴 Stopped | why the content could not be written, and that nothing was |
+| `STOP_STALE_BASE` | 🔴 Stopped | someone changed the skill in the repo meanwhile, so nothing was written |
+| `STOP_SCOPE` | 🔴 Stopped | the change also touched files it should not have, possibly undoing someone else's work |
+| `STOP_VERIFY_FAILED` | 🔴 Stopped | the change was saved, but not exactly as intended |
+| missing input | 🟡 Your turn | what is missing, named |
+| repo error | 🔴 Stopped | the repo could not be read or written, and the likely fix |
 
 `STOP_STALE_BASE` is the one outcome worth looping on: go back to step 2, re-read the path
 that moved, re-apply the edit, and run steps 6 to 8 again — once. A base that has moved again
@@ -412,9 +400,9 @@ by the second attempt is a condition for the person, not something to retry.
 
 Where the local copy is the source of truth and the repo copy moved independently, the
 change that landed is not yours to overwrite. Read what moved, fold it into the local copy
-first, then re-apply, and say in the report what the reconciliation took in. Where the two
+first, then re-apply, and tell the person what the reconciliation took in. Where the two
 touch the same lines there is no mechanical answer and none is guessed: stop with
-`NEEDS_CONTEXT`, name both changes, and leave which one survives to the person.
+🟡 Your turn, describe both changes, and ask which one survives as a **Decide**.
 
 ### 8. Check the two copies agree
 
@@ -428,44 +416,49 @@ Where the local copy is a pointer, there is no local method copy to compare. Do 
 compare its no-op anchor to the repo implementation or publish the anchor in its place.
 Verify local runtime registration separately, or explicitly report it pending/not checked.
 
-A mismatch does not change the run's status. Report it as the core's status — `LANDED` or
-`PROPOSED` — plus a drift note naming the file that differs, because the repo write did
+A mismatch does not change the run's status, which follows the core's outcome; add a
+**Good to know** naming the file that differs, because the repo write did
 land and the divergence is a second fact about the two copies rather than a different
 outcome. A code of its own, such as `LANDED_WITH_DRIFT`, would read as though the write had
 not landed, which is the opposite of what happened.
 
-### 9. Report
+### 9. Reply
 
-Report the folder, which copy was the source of truth, what depends on the skill, the
-route the core took, the commit or the pull request, and what the checks said. A change on
-a branch is unmerged and waiting for whoever merges it.
+Tell the person what changed in the skill, whether it is in effect, and anything they must
+do or know: a pull request to merge, a draft to save, a dependent skill affected, a check
+that did not run. The folder, source of truth, route, commit and check output go in the
+run's working notes. An invented sample, for a change that needs merging:
 
-A trimmed report, for a run that landed. The sample is invented: its commit, its sha and
-its paths are all fictional.
+> 🟡 **Your turn** — one click to finish.
+>
+> I updated your example skill so it also handles archived items. The change is ready on
+> GitHub, but it won't take effect until you approve it.
+>
+> **What to do:**
+> 1. Open [the proposed change](https://github.example/example-owner/example-repo/pull/7) and click **Merge pull request**.
+>
+> **Good to know:** the check for account-specific details isn't installed here, so it didn't run.
+>
+> *(question)* **Let me know when you've merged it.** Done · Something went wrong · Not now
 
-```
-status     LANDED
-skill      example-skill
-folder     meta/example-skill
-truth      the local copy, a full copy, so the repo was written from it
-depends    one skill names it in a `checks` hook row: review-pr
-route      base branch; no pull request was needed
-commit     9f2c1ab4d7e8, parent b1a2c3d4e5f6
-checks     cleanup scanner not installed, so that check did not run;
-           analyzer reported one finding, read and accepted;
-           selftest passed, 0 failing
-```
+After *Done*, check it really merged, then end 🟢 Finished.
 
-Where the core ended `STOP_STALE_BASE`, the report instead names the path that moved and
-says nothing was written; where it ended `PROPOSED`, it carries the pull request's number
-and URL and says the change is unmerged.
+## Ending
+
+Reply as [write-run-report](../write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | the core landed the change |
+| 🟡 Your turn | a pull request to merge, a draft to save, a dependent break or conflicting edit to decide, or an input missing. Unattended: through `follow-ups` |
+| 🔴 Stopped | not in the repo, cleanup or tests failed, the repo copy unreadable, or any core `STOP_*` |
 
 ## Companions
 
 | Hook | What a companion adds | Without one |
 | --- | --- | --- |
-| `layout` | where skills live in this repo, and the shape of a skill folder | read the repo's own instruction files, then copy an existing skill's shape; with neither, `NEEDS_CONTEXT` |
-| `cleanup` | which skill removes account-specific content before writing | use the skill host's own cleanup skill if it has one; where none can be found, say the check did not run and ask; with nobody present, `NEEDS_CONTEXT` |
+| `layout` | where skills live in this repo, and the shape of a skill folder | read the repo's own instruction files, then copy an existing skill's shape; with neither, 🟡 Your turn |
+| `cleanup` | which skill removes account-specific content before writing | use the skill host's own cleanup skill if it has one; where none can be found, do as step 6 says |
 | `checks` | which skill reviews a skill before the change is written | run the quality analyzer if it is installed; where it is not, say the check did not run |
 
 Read the repo's agent instructions for a setting named after each hook, one per line:

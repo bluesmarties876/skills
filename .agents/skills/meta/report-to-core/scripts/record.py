@@ -11,8 +11,18 @@ import os
 import re
 from typing import Dict, List, Optional, Set, Tuple
 
-STATUSES = ("DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT",
+STATUSES = ("finished", "your-turn", "waiting", "stopped",
             "not-selected", "no-skill")
+# The retired codes, still accepted from workspaces that have not caught up,
+# and what each one means now (CONVENTIONS.md, Ending a run).
+LEGACY_STATUSES = {"DONE": "finished", "DONE_WITH_CONCERNS": "your-turn",
+                   "BLOCKED": "stopped", "NEEDS_CONTEXT": "your-turn"}
+SUCCEEDED = ("finished", "waiting")  # the run ended without needing the person
+
+
+def normal_status(status):
+    """A record's status in the current vocabulary; a retired code is mapped."""
+    return LEGACY_STATUSES.get(status, status)
 KINDS = ("gap", "failure", "not-selected", "drift", "hook-unfilled",
          "dissatisfied", "declined")
 REASONS = ("wrong-output", "wrong-tone-or-context", "too-slow-or-long",
@@ -111,8 +121,9 @@ def validate(rec: Dict[str, str], vocab: Tuple[List[str], List[str]],
             errs.append("skill: not a skill name")
         elif skills is not None and skill not in skills:
             errs.append("skill: not a skill the core holds")
-    if rec["status"] not in STATUSES:
-        errs.append("status: not one of " + ", ".join(STATUSES))
+    if rec["status"] not in STATUSES and rec["status"] not in LEGACY_STATUSES:
+        errs.append("status: not one of " + ", ".join(STATUSES)
+                    + " (or a retired code: " + ", ".join(LEGACY_STATUSES) + ")")
     kind = rec["kind"]
     if kind not in KINDS:
         errs.append("kind: not one of " + ", ".join(KINDS))

@@ -17,12 +17,12 @@ The network it reasons about is described in [PURPOSE.md](../../../../PURPOSE.md
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| `PURPOSE.md` at the repo root | what value means, the absolute rules, the roles | stop with `NEEDS_CONTEXT`: with no definition of value there is nothing to rank against |
-| The core repo, as a folder on disk | the structural evidence | stop with `NEEDS_CONTEXT`. Fetch it as a tarball through `github-api` and extract it |
+| `PURPOSE.md` at the repo root | what value means, the absolute rules, the roles | stop with 🟡 Your turn, asking for it: with no definition of value there is nothing to rank against |
+| The core repo, as a folder on disk | the structural evidence | fetch it as a tarball through `github-api` and extract it, or stop with 🟡 Your turn, asking for it |
 | [decisions.md](decisions.md) | memory: past proposals, verdicts, standing rules, loops waiting for a signal | treat as empty, and say so: every proposal is then unchecked against past verdicts |
 | Ally reports from workspaces | what is actually used, missing, failing and disappointing | rank from structure alone, and say so in the report's first line. The recommendation is then about the shape of the core, not about what businesses need |
 
-Ally reports come from `collect-ally-reports --json`: each finding with its distinct reporters, explicit and inferred sightings, and any regression, plus the skills that succeed but disappoint and the workspaces whose reporting has gone quiet. Run it first. Its `evidence` is `no ally reports` when none have arrived; rank from structure then, and say so. Weigh reach by distinct reporters, and an explicit sighting above an inferred one. A quiet workspace is a broken sensor, not a sign that nothing is wrong there.
+Ally reports come from `collect-ally-reports --json`: each finding with its distinct reporters, explicit and inferred sightings, and any regression, plus the skills that succeed but disappoint and the workspaces whose reporting has gone quiet. Run it first. Its `evidence` is `no ally reports` when none have arrived. Weigh reach by distinct reporters, and an explicit sighting above an inferred one. A quiet workspace is a broken sensor, not a sign that nothing is wrong there.
 
 ## Safety
 
@@ -80,7 +80,7 @@ python3 scripts/network_model.py --selftest
 | `--limit N` | rows printed per section in the text form (default 20); the rest are counted, and never dropped from `--json` |
 | `--selftest` | prove each detector fires on a planted fixture |
 
-The script is beside this file, needs Python 3.9 or later and the standard library only, makes no network call and runs none of the code it reads. If it is missing, get the whole skill folder from the repo again rather than rewriting it. Run `--selftest` once in a new environment; anything but `PASS: 0 failing` means its output cannot be trusted, so stop with `BLOCKED`.
+It is beside this file, needs Python 3.9 or later and the standard library only, makes no network call and runs none of the code it reads. If it is missing, get the whole skill folder from the repo again rather than rewriting it. Run `--selftest` once in a new environment; anything but `PASS: 0 failing` means its output cannot be trusted, so stop with 🔴 Stopped.
 
 It prints candidates, never conclusions. Trimmed, from a run on this repo:
 
@@ -132,7 +132,7 @@ Rank by the first three multiplied, divided by the last three (scored as cost, s
 
 ### 7. Report
 
-One recommendation and one runner-up, in this shape:
+Write one recommendation and one runner-up as a document, in this shape:
 
 ```markdown
 # Leverage: <date>
@@ -163,6 +163,8 @@ Evidence: <structure only | structure and N ally reports>. Charter: <ratified | 
 
 A person must approve the design, not just say yes, when the change adds a new kind of place, state or power (an agent editing another agent's rules, for example), or weakens a guard. Say which in **Needs**.
 
+The reply links the document and says plainly what to change, why it pays off, and whether that takes one yes or a design review. "Change nothing" takes a sentence.
+
 ### 8. Record
 
 Append the recommendation to `decisions.md` as `pending`, numbered one past the highest entry:
@@ -187,18 +189,17 @@ Append the recommendation to `decisions.md` as `pending`, numbered one past the 
 | `rejected` | not proposed again; its reason is a standing rule |
 | `superseded` | replaced by the entry it names |
 
-When a person is present, ask for the verdict and its one-sentence reason, and record both. When the run is unattended, write the `pending` entry through the repo's write path and stop; the verdict waits for a person. Never mark your own proposal `accepted`.
+When a person is present, ask the person to decide (accept, reject, not now), with a one-sentence reason, and record both. When the run is unattended, write the `pending` entry through the repo's write path, send the question through the `follow-ups` hook and stop; the verdict waits for a person. Never mark your own proposal `accepted`.
 
 ## Ending
 
-End with one status line:
+Reply as [write-run-report](../write-run-report/SKILL.md) says.
 
-| Status | Means |
+| Status | When |
 | --- | --- |
-| `DONE` | A recommendation, or "change nothing", with every candidate confirmed in the source and the entry recorded. |
-| `DONE_WITH_CONCERNS` | Reported, but weaker than it looks: no ally reports, an unratified charter, or the entry could not be written. Name which. |
-| `BLOCKED` | The script's selftest failed, or the repo could not be read. Say what was tried. |
-| `NEEDS_CONTEXT` | `PURPOSE.md` or the repo is missing. Name which. |
+| 🟢 Finished | "Change nothing", or the verdict is recorded. No ally reports, or an unratified charter, is a Good to know. |
+| 🟡 Your turn | A recommendation awaits a verdict, or `PURPOSE.md` or the repo is missing. |
+| 🔴 Stopped | The selftest failed, the repo could not be read, or the entry could not be written. |
 
 ## Known limits
 

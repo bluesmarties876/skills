@@ -33,7 +33,7 @@ Fired eight or more times: more than any other check. It is the only defect that
 
 Promise against procedure is the one most likely to be a code defect.
 
-The script's half: for each code-span subject and flag, it finds a sentence where the subject sits near a negation and another, in a different section, where it does not, and reports the most distant pair. For samples, it compares `key=value` and `"key": value` facts across code blocks under one heading, and inside one block. A negation counts only for the subject nearest to it, within 60 characters; quoted labels ("Without one") and hyphenated words ("not-checked") are not negations; and tokens from a status table (a run's ending vocabulary, such as `BLOCKED`) are not subjects, because many branches end in one. The polarity heuristic is noisy, and is meant to point you at pairs worth reading, not to decide.
+The script's half: for each code-span subject and flag, it finds a sentence where the subject sits near a negation and another, in a different section, where it does not, and reports the most distant pair. For samples, it compares `key=value` and `"key": value` facts across code blocks under one heading, and inside one block. A negation counts only for the subject nearest to it, within 60 characters; quoted labels ("Without one") and hyphenated words ("not-checked") are not negations; and tokens from a status table (a run's ending vocabulary) are not subjects, because many branches end in one. The polarity heuristic is noisy, and is meant to point you at pairs worth reading, not to decide.
 
 ### 2. Metadata fidelity
 
@@ -168,6 +168,12 @@ and `STDLIB_CLAIM` now read a whitespace-collapsed copy of the docs. Filename an
 membership keep reading the raw text, where a newline cannot appear mid-token.
 
 **Sibling imports are reported once per module.** Eleven scripts importing one `client.py` produced eleven identical findings, which buries the real ones. They now collapse to a single finding naming the module and the files that import it. These cannot be pre-empted by the doc — the check reads filenames, not prose — so the count is not a signal of doc quality.
+
+### 13. Run report
+
+Added on 21 Oct 2026 with [write-run-report](../write-run-report/SKILL.md), which replaced the four status codes with four statuses that answer "what do I do with this thread now?". Not reverse-engineered from the platform analyzer: it guards the library's own convention.
+
+The script's half: a retired code (`DONE`, `DONE_WITH_CONCERNS`, `BLOCKED`, `NEEDS_CONTEXT`) in a code span, or the old `STATUS:` escalation shape, on any line that does not call it retired, legacy or replaced (certain); and a skill that names none of the four status emoji and never mentions write-run-report, unless it is a companion, which hands back to its parent (candidate). The judgement half is in SKILL.md.
 
 ## Input formats
 

@@ -103,7 +103,7 @@ def build(day: dict, vocab, skills) -> Dict[str, object]:
 
     stale = stale_heartbeats(day.get("heartbeats") or {}, today)
     for _ in stale:
-        records.append({"skill": REVIEW_SKILL, "status": "BLOCKED", "kind": "failure",
+        records.append({"skill": REVIEW_SKILL, "status": "stopped", "kind": "failure",
                         "signal": "explicit", "core_ref": day["core_ref"],
                         "reporter": day["reporter"]})
 
@@ -331,7 +331,7 @@ def selftest() -> int:
     rep, ref = "0123456789abcdef", "abc1234"
     base = {"date": "2026-10-20", "core_ref": ref, "reporter": rep}
 
-    ok = {"skill": "draft-proposal", "status": "DONE", "kind": "dissatisfied",
+    ok = {"skill": "draft-proposal", "status": "finished", "kind": "dissatisfied",
           "reason": "wrong-tone-or-context", "signal": "inferred", "need": "draft a proposal",
           "core_ref": ref, "reporter": rep}
     check("valid record passes", R.validate(ok, vocab, skills) == [])
@@ -349,6 +349,11 @@ def selftest() -> int:
         (dict(ok, kind="gap"), "gap with a skill"),
     ):
         check("refuses: " + why, R.validate(bad, vocab, skills) != [])
+    check("accepts a retired status code", R.validate(dict(ok, status="DONE"), vocab, skills) == [])
+    check("refuses an unknown status", R.validate(dict(ok, status="ALL_GOOD"), vocab, skills) != [])
+    check("maps retired codes", [R.normal_status(s) for s in ("DONE", "DONE_WITH_CONCERNS", "BLOCKED",
+                                                              "NEEDS_CONTEXT", "waiting")]
+          == ["finished", "your-turn", "stopped", "your-turn", "waiting"])
 
     body = R.render_body(ok)
     k, parsed = R.parse_body(body)

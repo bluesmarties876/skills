@@ -70,7 +70,8 @@ validator cannot tell those two apart and warns on both, so that call is yours t
 
 ## Output shape
 
-A **bulleted list**, one name per line, in the same order as the input. Bullets, not
+One status line, 🟢 **Finished**, then a **bulleted list**, one name per line, in the
+same order as the input. Bullets, not
 numbers — the user asked for this specifically. Nothing else in the response: no heading,
 no table, no "here are your names", no note about what was shortened.
 
@@ -80,8 +81,8 @@ tasks — say so in a single short line after the list. Never more than that. Th
 things under "Deliberately out of scope" are not exceptions to this: a note about what a
 name *lost* is allowed, a note about what you *chose to cut* is not.
 
-So the whole response is the list, plus at most one line after it — and the line is
-optional. If nothing was lost, the response is the list and nothing else.
+So the whole response is the status line and the list, plus at most one optional line
+after it.
 
 ## The validator script
 
@@ -180,9 +181,8 @@ The tool prints a named error rather than a traceback. Each has one fix:
 All of these exit 2, so `1` never means "the command failed".
 
 Exit codes: `0` clean, `1` at least one failure (or any warning under `--strict`), `2`
-usage error. An input the tool cannot use is a usage error, not a crash: a `--pairs`
-path that is missing, unreadable, a directory or not UTF-8 text exits `2` with a named
-message, so `1` always means a name failed rather than a command that never ran.
+usage error, including a `--pairs` path that is missing, unreadable, a directory or not
+UTF-8 text.
 
 ### What it checks, and how hard
 
@@ -264,7 +264,7 @@ rather than growing this skill.
   than one of them running to seven words. Rule R4 exists for exactly this.
 - **Treating the ceiling as a target.** Eight words is where a name becomes a problem, not
   a budget to spend. Aim at five.
-- **Adding commentary.** The output is a bulleted list. Resist the urge to explain the
+- **Adding commentary.** The output is the status line and a bulleted list. Resist the urge to explain the
   naming choices; the user asked for names.
 
 ## Files
@@ -272,3 +272,11 @@ rather than growing this skill.
 - `scripts/normalize_task_name.py` — the validator. Run it directly, or import `validate`
   and `Result` for programmatic use. Also exposes `check_verb_first`, `check_filler`,
   `check_length`, `check_specificity`, `check_detail` and `check_case` individually.
+
+## Ending
+
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says, in the [Output shape](#output-shape): the status line is the one addition its owner allows. When a skill calls this one, hand back the names and findings as plain facts; the caller writes the reply.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | The names are returned. |

@@ -33,7 +33,7 @@ With no ally reports, the reporting loop (D-1 in decisions.md) outranks every ot
 
 ### Change nothing
 
-Every gap is pending, accepted and being built, or an open loop. The report says what the loops reported, proposes nothing, and ends `DONE`.
+Every gap is pending, accepted and being built, or an open loop. The report says what the loops reported, proposes nothing, and ends 🟢 Finished.
 
 ## Replay benchmark
 
@@ -57,5 +57,5 @@ To run it: give the skill the repo at the commit before PURPOSE.md, with decisio
 - A name not held by the library is reported when two or more skills refer to it (`certain`), or one skill refers to it beside the word "skill" or in the possessive (`candidate`).
 - A name on a line that calls itself an example (`example`, `e.g.`, `for instance`, `placeholder`, `acme`), and any name that is a prefix or extension of one, is illustrative and never reported.
 - Hook settings are read from table rows in `AGENTS.md` whose first cell is a backticked hook name and whose second cell links or backticks a skill.
-- Outcome names are backticked upper-case tokens with an underscore, plus `DONE`, `BLOCKED`, `LANDED` and `PROPOSED`. Tokens ending `_TOKEN`, `_KEY`, `_PAT`, `_PROXY`, `_REPO`, `_SECRET` or `_URL` are treated as environment variables, not outcomes.
+- Outcome names are backticked upper-case tokens with an underscore, plus `LANDED`, `PROPOSED` and the retired `DONE` and `BLOCKED`. Tokens ending `_TOKEN`, `_KEY`, `_PAT`, `_PROXY`, `_REPO`, `_SECRET` or `_URL` are treated as environment variables, not outcomes.
 - It reads a folder on disk, not a git tree listing, because references live in file contents and a tree carries none.

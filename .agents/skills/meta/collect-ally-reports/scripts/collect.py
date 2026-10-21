@@ -89,7 +89,8 @@ def tally(issues: List[dict], heartbeat_comments: List[dict], vocab, skills,
 
     findings.sort(key=lambda f: (-f["reporters"], -f["explicit"], -f["seen"], f["issue"]))
     disappoints = [f["key"] for f in findings
-                   if f["kind"] == "dissatisfied" and f["status"] in ("DONE", "DONE_WITH_CONCERNS")]
+                   if f["kind"] == "dissatisfied"
+                   and (R.normal_status(f["status"]) in R.SUCCEEDED or f["status"] == "DONE_WITH_CONCERNS")]
 
     last_week: Dict[str, str] = {}
     for c in heartbeat_comments:
@@ -267,7 +268,7 @@ def selftest() -> int:
     skills = {"draft-proposal", "review-own-threads"}
     a, b, c = "0123456789abcdef", "fedcba9876543210", "1111222233334444"
     ref = "abc1234"
-    rec = {"skill": "draft-proposal", "status": "DONE", "kind": "dissatisfied",
+    rec = {"skill": "draft-proposal", "status": "finished", "kind": "dissatisfied",
            "reason": "wrong-tone-or-context", "signal": "inferred", "need": "draft a proposal",
            "core_ref": ref, "reporter": a}
     gap = {"skill": "none", "status": "no-skill", "kind": "gap", "signal": "explicit",

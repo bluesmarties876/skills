@@ -264,6 +264,18 @@ own `mode`: an auto-saved result is created; anything else is a draft awaiting t
 - Verify persisted state only after a successful save. A draft payload is not installed;
   report runtime registration as pending until the person saves it.
 
+## Ending
+
+Reply as [write-run-report](../write-run-report/SKILL.md) says. When `adopt-repo-skills` or another skill calls this one, hand back the status and the facts below; the caller writes the one reply.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | The pointer is saved and resolves: the skill is usable here and still lives in one place. |
+| 🟡 Your turn | The pointer is a draft awaiting their **Save** (confirm, then verify it resolves); a name mismatch, ambiguous name, older pointer or missing anchor needs their call; or a full local copy could be collapsed, offered as a decision. |
+| 🔴 Stopped | The library lacks the skill, its listing was incomplete, the resolver is missing, or `collapse-skill-to-pointer` is unavailable. Nothing was created. |
+
+Never show the person the classifier's labels (`thin_pointer`, `full_skill`, ...) or the plan payload; describe what they mean.
+
 ## Sample output
 
 Real output, from the two commands. Regenerate with `--fixture`-free runs of your own.
@@ -344,21 +356,11 @@ warnings:
 | `cannot plan pointer: … File exists …` | Exclusive creation protected an existing file. | Inspect it and choose a fresh scratch directory; do not overwrite it. |
 | `cannot plan pointer: … No such file or directory …` | The anchor's parent directory is missing. | Create a new scratch directory first, then retry. |
 
-## Failure modes worth recognising
+## Three failures the steps do not spell out
 
-| What you see | What it means |
-|---|---|
-| Resolver reports no such skill | Stop. Wrong name, or the repo is not its home. |
-| Resolver reports the name is ambiguous | Two folders share the leaf name. Ask which path; do not pick one. |
-| Resolver refuses on a truncated tree | GitHub's listing was incomplete, so "not found" would be a lie. Stop. |
-| Resolver 401/403 | The repo credential is bad or rate-limited. Not a missing skill. |
-| Derived resolver skill is not installed | Stop before writing a body that names nothing. |
-| Local skill is already a thin pointer | Leave it unchanged; report any runtime-registration gap rather than assuming it is usable. |
-| Local skill is a verbose pointer | Report it; do not overwrite. |
-| Local skill is a full skill | Hand off to `collapse-skill-to-pointer`; do not collapse it here. |
-| `collapse-skill-to-pointer` unavailable | Stop and ask. Do not re-implement its safety check. |
-| Repo frontmatter name ≠ folder name | The pointer takes the folder name. Report the mismatch. |
-| Repo frontmatter has no description | Write one from the body, or the pointer is undiscoverable. |
+- **The resolver refuses on a truncated tree.** GitHub's listing was incomplete, so "not found" would be a lie. Stop.
+- **The resolver answers 401 or 403.** The repo credential is bad or rate-limited; the skill is not missing.
+- **The repo frontmatter has no description.** Write one from the body, or the pointer is undiscoverable.
 
 ## What this skill deliberately does not do
 

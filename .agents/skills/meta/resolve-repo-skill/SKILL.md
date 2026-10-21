@@ -86,3 +86,13 @@ Resolve **by name, never by path**: a skill's name is its stable identity, its f
 If the name is not found, it lists the skills that are there, so a typo is obvious rather than mysterious.
 
 The script filename (`resolve_repo_skill.py`) is an implementation detail and has changed once already. If a command fails with "no such file", list what is actually in the skill's `scripts/` folder and use that name.
+
+## Ending
+
+Called by another skill: hand back the status and findings as plain facts; the caller writes the one reply. Asked for directly by a person: reply as [write-run-report](../write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | the folder was found |
+| 🟡 Your turn | no such skill, an ambiguous name, or a token needed or rejected: ask |
+| 🔴 Stopped | GitHub unreachable, rate-limited, or the tree truncated |
