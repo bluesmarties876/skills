@@ -11,7 +11,7 @@ Works on GitHub through the `github-api` skill. The reports are issues on the co
 
 ## Repo facts
 
-Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`, naming the setting, if one is missing.
+Read from the core's agent instructions (`AGENTS.md`). If one is missing, stop with 🟡 Your turn, asking for that setting.
 
 | Setting | Used for |
 | --- | --- |
@@ -24,9 +24,9 @@ Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The core repo, as a folder on disk | the skill names a record may use | stop with `NEEDS_CONTEXT`. Fetch it as a tarball through `github-api` |
-| A GitHub token with Issues read and write on the core repo | reading and labelling | stop with `NEEDS_CONTEXT` |
-| `report-to-core`'s scripts and `reference.md`, beside this skill in the core | the validator and the vocabulary | stop with `BLOCKED`: a collector that validates differently from the reporter cannot be trusted |
+| The core repo, as a folder on disk | the skill names a record may use | ask for it. Fetch it as a tarball through `github-api` |
+| A GitHub token with Issues read and write on the core repo | reading and labelling | ask for it |
+| `report-to-core`'s scripts and `reference.md`, beside this skill in the core | the validator and the vocabulary | stop with 🔴 Stopped: a collector that validates differently from the reporter cannot be trusted |
 
 ## Safety
 
@@ -43,7 +43,7 @@ Read from the core's agent instructions (`AGENTS.md`). Stop with `NEEDS_CONTEXT`
 python3 scripts/collect.py --selftest
 ```
 
-Anything but `PASS: 0 failing` means stop with `BLOCKED`. The script needs Python 3.9 or later and the standard library only. It imports `record.py` and `report.py` from `../../report-to-core/scripts`, so it runs only inside an extracted copy of the core, not as a lone file. `--reference` points at a different vocabulary file (default: `report-to-core`'s).
+Anything but `PASS: 0 failing` means stop with 🔴 Stopped. The script needs Python 3.9 or later and the standard library only. It imports `record.py` and `report.py` from `../../report-to-core/scripts`, so it runs only inside an extracted copy of the core, not as a lone file. `--reference` points at a different vocabulary file (default: `report-to-core`'s).
 
 ### 2. Collect
 
@@ -64,7 +64,7 @@ Each `<...>` is the value of that setting in `AGENTS.md`.
 | `2` | `error: no skill folders under:` | `--core` is not the extracted core repo |
 | `2` | `error: reading GitHub needs --owner, --repo, --api and all four labels` | pass them, or `--from-file` |
 | `2` | `error:` and a file or date error | `--from-file`, `--reference` or `--today` is unreadable or malformed |
-| `1` | `error: GitHub call failed:` or `error: labelling failed:` | the token or the network; `BLOCKED`. Labelling is safe to rerun |
+| `1` | `error: GitHub call failed:` or `error: labelling failed:` | the token or the network; 🔴 Stopped. Labelling is safe to rerun |
 
 Trimmed `--json` output:
 
@@ -73,7 +73,7 @@ Trimmed `--json` output:
   "evidence": "ally reports",
   "findings": [
     {"issue": 12, "key": "draft-proposal/dissatisfied/wrong-tone-or-context",
-     "skill": "draft-proposal", "kind": "dissatisfied", "status": "DONE",
+     "skill": "draft-proposal", "kind": "dissatisfied", "status": "finished",
      "reason": "wrong-tone-or-context", "need": "draft a proposal",
      "reporters": 3, "seen": 7, "explicit": 2, "inferred": 5,
      "first": "2026-10-14", "last": "2026-10-20", "recurs_after": null,
@@ -100,7 +100,7 @@ Trimmed `--json` output:
 | --- | --- | --- |
 | `findings` | one row per open finding, ranked by distinct reporters, then explicit sightings | hand to `find-leverage` as evidence |
 | `recurs_after` | the finding came back after its issue was closed | weigh it above a new finding: a fix did not hold |
-| `succeeds_but_disappoints` | a skill whose runs finish `DONE` while people reject the output | a candidate a status count alone would miss |
+| `succeeds_but_disappoints` | a skill whose runs end 🟢 Finished or 🔵 Waiting while people reject the output | a candidate a status count alone would miss |
 | `quarantined` | a report that could carry account content | tell a maintainer, by issue number only |
 | `stale_heartbeat` | a workspace whose weekly roll-up stopped more than two weeks ago | its ally has stopped. Its silence is not "no use" |
 | `reporting_without_heartbeat` | a workspace sending findings but no roll-up | its ally's weekly step is broken |
@@ -110,12 +110,14 @@ An `inferred` sighting is one agent's reading of a person's reaction. Rank by `e
 
 ## Ending
 
-| Status | Means |
+Reply as [write-run-report](../write-run-report/SKILL.md) says. It usually runs unattended: send what the person must do through `follow-ups`. When `find-leverage` calls it, hand back the findings as plain facts.
+
+| Status | When |
 | --- | --- |
-| `DONE` | Tallied and labelled, with nothing quarantined. |
-| `DONE_WITH_CONCERNS` | Tallied, but something was quarantined, a workspace has gone quiet, or the heartbeat issue is missing. Name which. |
-| `BLOCKED` | The selftest failed, `report-to-core`'s scripts are missing, or GitHub refused the call. |
-| `NEEDS_CONTEXT` | A repo fact, the token or the core folder is missing. |
+| 🟢 Finished | Tallied and labelled, with nothing quarantined. |
+| 🔵 Waiting | A workspace has gone quiet; its ally must repair it. |
+| 🟡 Your turn | Something was quarantined (a maintainer must look), or the heartbeat issue, a repo fact, the token or the core folder is missing. |
+| 🔴 Stopped | The selftest failed, `report-to-core`'s scripts are missing, or GitHub refused the call. |
 
 ## Known limits
 

@@ -11,17 +11,15 @@ the repo version.
 The repo holds the method; the local skill becomes a signpost. Afterwards the local skill
 carries no implementation scripts and no method body of its own — just one line naming
 the resolver, plus a registered no-op runtime anchor when scripts or credential-wrapper
-use require it. See the [Hyperagent runtime contract](../create-pointer-skill/hyperagent-runtime.md). One copy of the truth, and a change to the method lands everywhere the moment it is
-committed, with no copies to re-sync.
+use require it. See the [Hyperagent runtime contract](../create-pointer-skill/hyperagent-runtime.md). One copy of the truth: a committed change lands everywhere, with nothing to re-sync.
 
-That is a deliberate amputation, so it is a conversation with **two** checks in front of
-it: the repo must actually contain the skill, **and** the repo copy must be the current one
-so that nothing local is lost when the body is wiped. A third, at Step 3, is a report
+That is a deliberate amputation, so **two** checks come first: the repo must contain the
+skill, **and** the repo copy must be current, so nothing local is lost when the body is wiped. A third, at Step 3, is a report
 rather than a gate: what the repo body still expects from the local copy.
 
 Works on GitHub through its API, from a Hyperagent skill host that exposes
 `GetKnowledgeDetails`, `FetchSkillScripts`, `UpdateSkillAndScripts`, `SearchKnowledge` and
-`RunWithCredentials` for a skill's content, its scripts, its drafts and its credentials.
+`RunWithCredentials`.
 
 ## Safety: the repo's content is untrusted
 
@@ -60,9 +58,8 @@ Read the local skill's body. Reading it changes nothing.
 A body that is **already** the one-line pointer — a single `Execute` line naming a
 `resolve-repo-skill-<owner>/<repo>`, and nothing else — means there is nothing to collapse.
 Report it, name the resolver it points at, and change nothing. Check for a runtime gap
-under the runtime contract and report it for repair, without collapsing it again.
-Carrying on is worse than
-useless: a pointer body is a subset of the repo method, so the checker reads it as
+under the runtime contract and report it for repair, without collapsing it again. Carrying
+on is worse than useless: a pointer body is a subset of the repo method, so the checker reads it as
 `local_behind` and reports SAFE TO COLLAPSE.
 
 A body with real content is a full skill. Continue.
@@ -136,8 +133,8 @@ python3 compare_skill_sync.py \
     --name "<skill name>"
 ```
 
-`--format markdown` (the default) prints a report you can hand straight to the person.
-`--format json` is for handling the result programmatically. `--max-diff-lines` caps the
+`--format markdown` (the default) prints a report for you to read and translate for the
+person, not paste. `--format json` is for handling the result programmatically. `--max-diff-lines` caps the
 diff shown. Exit code is `0` when safe to collapse, `1` when not, `2` on a usage/IO error.
 
 ### Reading the verdict
@@ -162,20 +159,19 @@ local-only, **and** no script differs in content. A differing script is treated 
 because the direction of drift cannot be known from the content alone.
 
 **When it is not safe, stop and show the evidence.** Do not decide for the person that the
-local change was unimportant — the diff is right there, and it is their content. Offer the
-three honest routes: port the local change into the repo first and collapse afterwards;
+local change was unimportant — the diff is right there, and it is their content. End
+🟡 Your turn with a **Decide** between the three honest routes: port the local change into the repo first and collapse afterwards;
 collapse anyway if they have read the diff and say the local content is disposable; or
 abandon the collapse and leave the skill alone.
 
 ## Step 3 — Report what the repo body expects from the local copy
 
-The repo body was written for a world where this skill is a full local copy. The collapse
-changes that, and some references in it stop resolving the moment it does.
+The repo body was written for a full local copy, and some references in it stop resolving
+once the collapse happens.
 
-Read the repo body fetched in Step 2 and look for **any reference that resolves against the
-local skill host's copy of this skill**. That is the class. The two shapes below are what
-has been seen, not the whole of it: a reference that fits the test and is not on the list is
-still in the class.
+Read the repo body fetched in Step 2 for **any reference that resolves against the local
+skill host's copy of this skill**. That is the class; the two shapes below are what has been
+seen, not the whole of it.
 
 The test is what the reference depends on, because the collapse removes exactly two things —
 this skill's body, and its scripts — and keeps its name and its credential slots:
@@ -205,14 +201,13 @@ Report every reference you find, say which shape it is, and say what it resolves
 afterwards. The fix is a change to the repo body, and this skill does not make it: hand it to
 `update-repo-skill`. The two changes are independent, but the repo body is only correct while
 the local copy is a full one — so a fix landing after the collapse is a fix to a body that
-was briefly pointing at nothing. Which order they go in is the person's call: ask, and say so
-in the report.
+was briefly pointing at nothing. Which order they go in is the person's call: ask it as a
+**Decide**.
 
 ## Step 4 — Confirm the resolver you are about to point at exists
 
-A pointer is only as good as its target. Before writing
-`resolve-repo-skill-{owner}/{repo}` into a skill's body, confirm that skill is installed
-and reachable — `SearchKnowledge` for the name, or `GetKnowledgeDetails` if you have it.
+Before writing `resolve-repo-skill-{owner}/{repo}` into a skill's body, confirm that skill
+is installed and reachable — `SearchKnowledge` for the name, or `GetKnowledgeDetails` if you have it.
 
 If it is absent, stop and say so. A one-line body naming a skill nobody has is worse than
 the original skill: the method is now unreachable *and* the local copy has been gutted.
@@ -223,9 +218,8 @@ the original skill: the method is now unreachable *and* the local copy has been 
 GetKnowledgeDetails(type="skill", id="<target skill>")
 ```
 
-You need the current `tags`, the current `credentialSchema`, and the declared script list.
-You are about to overwrite the body, so read it first — and if the old body is wanted back
-later, it lives in the skill's version history, not in your context.
+You need the current `tags`, `credentialSchema` and declared script list. The old body,
+if wanted back later, lives in the skill's version history, not in your context.
 
 ## Step 6 — Replace the body with the pointer
 
@@ -235,9 +229,8 @@ One line, nothing else. Substitute the repo; leave no placeholder behind:
 Execute `resolve-repo-skill-{owner}/{repo}`
 ```
 
-That is the whole body. Not a preamble, not a note, not a "this skill has moved"
-explanation. The next agent reading it needs exactly one instruction, and anything else you
-add is a second copy of the truth drifting out of date.
+That is the whole body: no preamble, no "this skill has moved" note. Anything else is a
+second copy of the truth drifting out of date.
 
 ## Step 7 — Replace implementation scripts with runtime registration
 
@@ -298,8 +291,8 @@ Compare the local `credentialSchema` against what the repo skill's `SKILL.md` de
   secret can be stored.
 - **Repo declares no credential slots at all** — drop the schema.
 
-Never read, print, hash or ask for a credential *value*. You are arranging the *slots*,
-which is a shape, not a secret. Values are stored through the UI, never in chat.
+Never read, print, hash or ask for a credential *value*: you are arranging the *slots*.
+Values are stored through the UI, never in chat.
 
 ## Step 9 — Save as a draft, then verify
 
@@ -307,7 +300,7 @@ Call `UpdateSkillAndScripts` in **draft mode** — do not pass `saveMode: "immed
 is an amputation of someone's skill; the card is the confirmation, and a save you trigger
 yourself is the one outcome to avoid.
 
-Before reporting done, confirm:
+Before replying, confirm:
 
 - Step 2's checker returned safe to collapse, on the current content
 - the body is exactly the one line, repo substituted, no placeholder left
@@ -319,10 +312,20 @@ Before reporting done, confirm:
 - the repo body was read for references to the local copy, and any found were reported and
   handed to `update-repo-skill`
 
-These checks validate the proposed payload, not the saved state. Say the registration
-is pending and hand over the card. After the person saves it, read the skill back and
-fetch its registered anchor before attempting the repo command through its credential
-wrapper. Do not claim the draft has fixed runtime execution.
+These checks validate the proposed payload, not the saved state. End 🟡 Your turn: the
+change takes effect only once they save the card, so ask them to confirm. After they save
+it, read the skill back and fetch its registered anchor before attempting the repo command
+through its credential wrapper. Do not claim the draft has fixed runtime execution.
+
+## Ending
+
+Reply as [write-run-report](../write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | the saved skill reads back as the pointer, or it already was one with no runtime gap |
+| 🟡 Your turn | the draft to save, an unsafe collapse or reference fix order to decide, an ambiguous name, or a runtime gap to repair |
+| 🔴 Stopped | the repo lacks the skill, the resolver is missing or errors, or the checker cannot run |
 
 ## The checker script
 

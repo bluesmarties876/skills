@@ -30,16 +30,15 @@ Follow [CONVENTIONS.md](../../../../CONVENTIONS.md) throughout.
 - "Should we build our own booking system or buy one?"
 - As a step in a larger piece of work: replacing a tool at renewal, or checking a tool someone already picked.
 
-Not for: negotiating, signing up, starting a trial account, or contacting a vendor. This
-skill **decides and reports**. Each of those is a separate action, taken with the person's
-approval and their own tooling.
+Not for: negotiating, signing up, starting a trial, or contacting a vendor. This skill
+**decides and reports**; each of those is a separate action the person approves.
 
 ## Inputs
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The job, for whom, and what is out of scope | everything | ask in the intake, then stop. Unattended: `NEEDS_CONTEXT`. Do not look it up |
-| Hard constraints: budget, data location, sign-in, systems it must connect to | step 4 | ask in the intake. A blank means that rule is not in play. Unattended: generic musts, `DONE_WITH_CONCERNS` |
+| The job, for whom, and what is out of scope | everything | ask in the intake, then stop. Unattended: 🟡 Your turn, asking for it. Do not look it up |
+| Hard constraints: budget, data location, sign-in, systems it must connect to | step 4 | ask in the intake. A blank means that rule is not in play. Unattended: generic musts, named as a Good to know |
 | Time horizon in years | step 8 | 3 years, and the report says it was assumed |
 | Which outcomes should win | step 5 | intake item 7. If they cannot answer, keep the proposed weights and say so |
 | Candidates to include, and candidates to leave off | step 3 | after the intake, the longlist comes from research alone |
@@ -92,8 +91,8 @@ If the job is still vague once they answer, ask again and stop. Do not fill it f
 homepage, a lookup, or an earlier chat.
 
 Unattended, use only facts the prompt states. Do not research the business to fill the
-rest. A missing job is `NEEDS_CONTEXT`. Missing constraints use the generic musts and
-`DONE_WITH_CONCERNS`.
+rest. A missing job is 🟡 Your turn, asking for it. Missing constraints use the generic musts,
+named as a Good to know.
 
 ## The script
 
@@ -102,7 +101,7 @@ standard library only, makes no network call and reads no credential, so run it 
 `python3`. If it is missing, get the whole skill folder again rather than rewriting it. Run
 `python3 scripts/score_options.py --selftest` once in a new environment; it ends
 `PASS: 0 failing`, and anything else means the verdicts below cannot be trusted, so stop with
-`BLOCKED`.
+🔴 Stopped.
 
 ```
 python3 scripts/score_options.py score options.json
@@ -117,9 +116,9 @@ rules and the fictional example.
 | Exit | Means | Do |
 | --- | --- | --- |
 | 0 | a result, printed as JSON | read it |
-| 1 | `--selftest` failed | stop with `BLOCKED` |
+| 1 | `--selftest` failed | stop with 🔴 Stopped |
 | 2 | bad input; stderr says `error:` and names the field | fix that field and run again |
-| 3 | a defect in the script; stderr says `internal error: ...` | stop with `BLOCKED`, quoting the message |
+| 3 | a defect in the script; stderr says `internal error: ...` | stop with 🔴 Stopped |
 
 ## The ten steps
 
@@ -144,9 +143,9 @@ not how new it is to this business:
 | Commodity | standard, metered, interchangeable | consume as a utility: continue, weighting cost and exit heavily |
 
 A capability that is genesis or custom-built **and** differentiates the business ends here:
-report "build, not select", with the reason, and status `DONE`. Something that is
+report "build, not select", with the reason, and end 🟢 Finished. Something that is
 genesis-stage and does **not** differentiate has no product to buy yet: report "nothing to
-buy yet", with the nearest workaround, and status `DONE_WITH_CONCERNS`.
+buy yet", with the nearest workaround, and end 🟢 Finished.
 
 ### 3. Longlist
 
@@ -244,7 +243,7 @@ and `verdict`. The verdict decides what happens next:
 | `CLOSE_CALL` | the leader is ahead by less than 10% | carry the top options into steps 7 and 8 together; the report asks the person to choose |
 | `TIE` | the top two totals are equal | as `CLOSE_CALL` |
 | `SINGLE_SURVIVOR` | exactly one option passed the musts | judge it against doing nothing and against the ideal: is it good enough to accept? Say so plainly |
-| `NO_SURVIVORS` | every option failed a must | report which must eliminated each, and ask whether a must should be relaxed or the longlist widened. Unattended: stop with `BLOCKED` |
+| `NO_SURVIVORS` | every option failed a must | report which must eliminated each, and ask whether a must should be relaxed or the longlist widened. Unattended: stop with 🔴 Stopped |
 | `INCOMPLETE` | an option has a must still `null`, or a want left unscored | resolve the named gaps (`unconfirmed`, `incomplete`) and run again; do not recommend on a partial table |
 
 `vendor_stated_scores` counts how many of each option's scores rest on the vendor's word;
@@ -303,11 +302,11 @@ criteria: a pilot that tests only what is already known proves nothing.
 The person sees three beats and no others: one intake form, the work with no further
 questions, then one comparison.
 
-Open the comparison with their answers in a few lines, so a wrong intake is obvious.
+Open with their answers in a few lines, so a wrong intake is obvious.
 Then one short block per option, including those that failed a rule: what it is, whether
 it passes the rules they set, what it is better at, what can go wrong, and the money.
-Label every estimate. Scores, weights, percents, and verdict names stay out of what the
-person reads and out of every question.
+Label every estimate. Scores, weights, percents and verdict names never reach the person
+or a question.
 
 A clear leader ends with one recommendation in that plain language, the pilot, and who
 confirms it.
@@ -316,18 +315,21 @@ A close call, a tie, or a fragile lead is a choice question that stands alone, b
 form can appear without the prose above it. Each option is a sentence about the
 difference, written so someone who never saw a score can choose.
 
-When nobody is in the conversation, do not pick. Describe what separates the options and
-end `DONE_WITH_CONCERNS`.
+When nobody is in the conversation, do not pick. Describe what separates the options, send
+the choice through the `follow-ups` hook, and end 🟡 Your turn.
 
-Then list what was not checked, and whether the companions were used. End with a status
-line:
+What was not checked, and whether companions were used, go in the working notes; a gap the
+person should weigh, such as estimated costs, is a Good to know.
+
+## Ending
+
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
 
 | Status | When |
 | --- | --- |
-| `DONE` | a recommendation or "build, not select", with evidence for every must and score |
-| `DONE_WITH_CONCERNS` | a recommendation, but weights unconfirmed, scores largely vendor-stated, costs estimated, or no house criteria applied; or "nothing to buy yet" from step 2; or, unattended, a close call, tie or fragile lead left for a person to choose. Name which |
-| `BLOCKED` | `NO_SURVIVORS` unattended, the script fails its selftest, or it exits 3 |
-| `NEEDS_CONTEXT` | the intake has not been answered, or the job is still unknown. Name what is missing. Do not go and look it up |
+| 🟢 Finished | a clear recommendation, "build, not select", or "nothing to buy yet" |
+| 🟡 Your turn | a close call, tie or fragile lead to choose; no survivor, asking which rule to relax (interactive); or the intake or job unknown: ask, never look it up |
+| 🔴 Stopped | no survivor (unattended), or the script fails its selftest or exits 3 |
 
 ## Files
 

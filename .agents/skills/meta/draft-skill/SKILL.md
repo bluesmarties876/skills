@@ -20,7 +20,7 @@ and their sources. It is also a finished example of step 1's output.
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The goal: what the new skill should get done | every step | interactive: ask. Unattended: `NEEDS_CONTEXT` |
+| The goal: what the new skill should get done | every step | interactive: ask. Unattended: 🟡 Your turn, asking for it |
 | The category folder | step 3 | pick the existing category that fits; if none does, propose a new one in the plan |
 | The skill's name | step 3 | propose one in the plan: lowercase, hyphenated, verb first |
 | Material the person supplies (a past thread, notes, a procedure) | steps 1 and 2 | work from the research alone |
@@ -43,12 +43,12 @@ skill's folder.
 
 Before any research, settle what later steps depend on:
 
-1. **The goal.** If there is none, ask; unattended, end `NEEDS_CONTEXT`.
+1. **The goal.** If there is none, ask; unattended, end 🟡 Your turn, asking for it.
 2. **The checks.** Read the `checks` setting from the repo's agent instructions and
    confirm the skill it names can be read. If it is unset or unreadable, end
-   `NEEDS_CONTEXT` naming it, before any work is done.
+   🟡 Your turn asking for it, before any work is done.
 3. **A working name and category.** If a folder already exists at that path, do not
-   overwrite it: interactive, ask for another name; unattended, end `NEEDS_CONTEXT`
+   overwrite it: interactive, ask for another name; unattended, end 🟡 Your turn
    naming the clash. The plan may change the name; if it does, move the folder.
 
 ### 1. Establish the baseline, then research
@@ -106,7 +106,7 @@ Not loaded by default. <One line on what the file holds.>
 **Sources.** <Author, [Title](url), section read>; <secondary sources labelled (secondary)>.
 ```
 
-If no page or document can be opened (no web access, every fetch refused), end `BLOCKED`.
+If no page or document can be opened (no web access, every fetch refused), end 🔴 Stopped.
 Do not fall back to recall. Fewer than two frameworks from read sources is worth a
 concern in the plan, not a stop. If pages could be read but none holds a framework for
 the goal, write `sources.md` with the repo's conventions as its only entry and say so at
@@ -141,9 +141,8 @@ If a later finding requires changing an established choice, return that decision
 the person rather than treating it as a routine fix.
 
 **Wait for approval.** Interactive: revise until the person approves. If they decide not
-to build the skill, stop there, keep `sources.md`, and end `DONE_WITH_CONCERNS` saying the
-plan was declined. Unattended: write the plan, make no draft, and end
-`DONE_WITH_CONCERNS` saying the plan awaits review.
+to build the skill, stop there, keep `sources.md`, and end 🟢 Finished. Unattended: write the plan, make no
+draft, send it for review through `follow-ups`, and end 🟡 Your turn.
 
 Approval covers step 5 too: the fixes are made without asking again, even where the
 checks skill would otherwise ask before editing its target.
@@ -171,46 +170,36 @@ every step it lists, not only its script.
 
 Fix each confirmed finding in the new skill, then run step 4 again. Dismiss a finding only
 as a false positive, with the reason. If one finding is still failing after three rounds
-of fixes, stop and end `BLOCKED`, naming it.
+of fixes, stop and end 🔴 Stopped, naming it.
 
 ### 6. Stop and report
 
-Report, in this order:
-
-1. the files written;
-2. findings fixed, one line each;
-3. findings dismissed, each with its reason;
-4. **Not checked**: what neither run covered (an unrun script, an unreadable source);
-5. the status line.
-
-A sample, from the run that drafted this skill, trimmed:
+The reply tells the person what the new skill does and where it is saved, in their words
+("your skills library", not a path). Fixed and
+dismissed findings, with reasons, and what neither check run covered go in the run's
+working notes; a gap that matters (an unrun script, an unreadable source) is a **Good to
+know**. A sample, from the run that drafted this skill:
 
 ```markdown
-**Files:** meta/draft-skill/SKILL.md, meta/draft-skill/sources.md
-**Fixed:** checks setting read after the draft existed; now confirmed in step 0.
-**Fixed:** no outcome when the person declines the plan; now ends DONE_WITH_CONCERNS.
-**Dismissed:** 22 citation hosts and URLs in sources.md; they are published sources, not leaked data.
-**Not checked:** no script, so no code to verify the method pass against.
+🟡 **Your turn** — your new skill is drafted.
 
-DONE_WITH_CONCERNS: the method pass could not be verified against code; the skill has none.
+It turns a goal into a researched, checked draft skill. It is saved in its own folder in
+your skills library, as instructions plus the research behind them. The quality check
+found two problems; I fixed both.
+
+**Good to know:** it has no script, so part of the check had no code to test against.
+
+(question) Add it to your shared library now? Yes (recommended) · Not yet
 ```
 
 Then stop. Do not commit or push.
 
 ## Ending
 
+Reply as [write-run-report](../write-run-report/SKILL.md) says.
+
 | Status | When |
 | --- | --- |
-| `DONE` | The skill is drafted, and the last check run found nothing unfixed or undismissed. |
-| `DONE_WITH_CONCERNS` | Stopped at the plan (unattended, or the person declined); or drafted with something worth a look (a secondary-only framework, a part the checks could not verify). Name which. |
-| `BLOCKED` | No source could be read, or a finding survived three rounds of fixes. |
-| `NEEDS_CONTEXT` | No goal, a name that clashes, or no readable `checks` skill. Name which. |
-
-For `BLOCKED`, use the shape in [CONVENTIONS.md](../../../../CONVENTIONS.md#ending-a-run):
-
-```
-STATUS: BLOCKED
-REASON: no source could be opened; every fetch was refused
-ATTEMPTED: three searches and five page fetches
-RECOMMENDATION: rerun where the web is reachable, or supply the documents
-```
+| 🟢 Finished | The person declined the plan, or the drafted skill was handed on to be published. |
+| 🟡 Your turn | The skill is drafted, every finding fixed or dismissed, and whether to publish it is theirs to decide; the plan awaits review (unattended); or no goal, a name that clashes, or no readable `checks` skill: ask for it. |
+| 🔴 Stopped | Work stopped: no source could be read, or a finding survived three rounds of fixes. |

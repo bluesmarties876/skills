@@ -10,8 +10,8 @@ Two workflow skills call it and own the preconditions. `publish-local-skill-to-r
 decides a skill that is absent should be added. `update-repo-skill` decides a skill that
 is present should change, and reads the copy it is replacing.
 
-This skill decides nothing about whether a change is a good idea, who is allowed to make
-it, or what the repo's rules are. It writes, and it reports what happened.
+It decides nothing about whether a change is a good idea, who may make it, or what the
+repo's rules are. It writes, and hands back what happened.
 
 Works on GitHub through its API, from a skill host that exposes `FetchSkillScripts` and
 `RunWithCredentials` for a skill's scripts and its credentials. Every GitHub call below is
@@ -22,15 +22,17 @@ stages the change, hands over the manifest, and proves the result; it owns no cr
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The repo, as `<owner>/<repo>` | everything | `NEEDS_CONTEXT` |
-| The repo-relative folder for the skill | everything | `NEEDS_CONTEXT` |
-| The skill's name, body, description, scripts and references | staging | `NEEDS_CONTEXT` |
+| The repo, as `<owner>/<repo>` | everything | 🟡 Your turn, asking for it |
+| The repo-relative folder for the skill | everything | 🟡 Your turn, asking for it |
+| The skill's name, body, description, scripts and references | staging | 🟡 Your turn, asking for them |
 | The base branch a new branch is created from | the write, when the branch does not exist yet | `main`. `--base-branch` defaults to `main` and this skill never reads the repo's default branch, so on a repo whose default is `master` pass it explicitly |
-| The base copies of any file being replaced, as repo path to local path | the stale-base guard | the guard is skipped, and the report says so |
+| The base copies of any file being replaced, as repo path to local path | the stale-base guard | the guard is skipped, and the caller is told so |
 | The repo paths of any file the change removes | the removal, and its proof | the file stays in the repo, silently, and the commit looks complete |
 | The commit message | the commit | `Add <name> skill`. For a change to a skill the repo already holds, pass `--message "Update <name> skill"`; the script's default does not know the difference |
 
 ## Outcomes
+
+Internal words, handed back to the caller and never shown to the person.
 
 | Status | When | What has happened |
 | --- | --- | --- |
@@ -38,10 +40,10 @@ stages the change, hands over the manifest, and proves the result; it owns no cr
 | `PROPOSED` | the write was refused because a pull request is required, so a branch and a pull request were made | the change is visible and unmerged |
 | `STOP_REFUSED` | staging refused the input | nothing written; see the refusal table |
 | `STOP_STALE_BASE` | a file being replaced changed since the caller read it | nothing written |
-| `STOP_SCOPE` | the commit touched a path it was not meant to, or did not remove one it was meant to | the commit exists, and the report names the paths |
-| `STOP_VERIFY_FAILED` | a committed file does not match what was staged | the commit exists, and the report names the files |
-| `NEEDS_CONTEXT` | an input above is missing | nothing written |
-| `BLOCKED` | the repo cannot be read or written, or the write failed for a reason that is not "a pull request is required" | the error is reported as it came |
+| `STOP_SCOPE` | the commit touched a path it was not meant to, or did not remove one it was meant to | the commit exists; the paths are named |
+| `STOP_VERIFY_FAILED` | a committed file does not match what was staged | the commit exists; the files are named |
+| 🟡 Your turn | an input above is missing | nothing written |
+| 🔴 Stopped | the repo cannot be read or written, or the write failed for a reason that is not "a pull request is required" | the error is handed back as it came |
 
 ## Safety
 
@@ -57,7 +59,7 @@ stages the change, hands over the manifest, and proves the result; it owns no cr
    at call time. A skill's credential *slots* are written with it; their values stay
    where they are stored.
 4. **A guard that cannot run is disclosed, not skipped quietly.** With no base copies
-   there is no stale-base check, and the report says so in those words.
+   there is no stale-base check, and the caller is told so in those words.
 
 ## Steps
 
@@ -87,9 +89,9 @@ are skipped. **Read `notes`** — every skip, and every replacement of an output
 already existed, is named there and nowhere else, so a populated `notes` is a run to look
 at before writing.
 
-**A removed file needs `--delete`, given as a repo path.** Staging copies what is there
-now; it cannot infer an absence, so a removed script would otherwise stay in the repo while
-the commit looked complete. `--delete` needs `--manifest-out`, and a path that is staged
+**A removed file needs `--delete`, given as a repo path.** Staging cannot infer an
+absence, so a removed script would otherwise stay in the repo while the commit looked
+complete. `--delete` needs `--manifest-out`, and a path that is staged
 and deleted at once is refused — including `SKILL.md`, which is always written. The file
 being removed need not exist locally.
 
@@ -150,8 +152,8 @@ cannot create the output folder: <path>
 
 ### 2. Guard the base, before writing anything
 
-A write based on a copy that has since moved replaces whatever landed in between. That is
-a lost update, and it is silent: the commit succeeds and nothing in it looks wrong.
+A write based on a copy that has since moved silently replaces whatever landed in between:
+a lost update.
 
 Where the caller supplied the copies it read before editing, fetch those paths from the
 base branch **now** — immediately before the write, not earlier — into a directory, and
@@ -173,13 +175,13 @@ Pass `--ref <base tip sha>` instead of the branch name if the branch can move un
 while the guard runs.
 
 `ok: false` here is `STOP_STALE_BASE`. Write nothing, and tell the caller which path moved
-so it can re-read and re-apply its edit. This check is the one that prevents a lost
-update; the scope check in step 5 only finds one after the fact.
+so it can re-read and re-apply its edit. This check prevents a lost update; step 5 only
+finds one after the fact.
 
 Where the base copy is expected to be **gone** rather than moved — the file was deleted
 upstream — pass `--allow-absent-readback`, so a file missing from the read-back directory
-is reported as absent instead of as a byte mismatch. Those are different things to tell
-the caller, and only one of them means "re-read and re-apply".
+is reported as absent instead of as a byte mismatch; only a mismatch means "re-read and
+re-apply".
 
 ### 3. Write it
 
@@ -191,9 +193,8 @@ manifest from step 1.
 python3 commit_files.py --manifest /tmp/stage-manifest.json
 ```
 
-**Try the base branch first.** Whatever the repo's rules are, the attempt is the answer,
-and this skill models no roles, bypass lists or identities. On success it prints the
-commit it created:
+**Try the base branch first.** The attempt is the answer; this skill models no roles,
+bypass lists or identities. On success it prints the commit it created:
 
 ```json
 {
@@ -208,16 +209,14 @@ commit it created:
 }
 ```
 
-Keep `commit_sha` and `parent_sha`: step 4 fetches at the first and step 5 compares against
-the second. `branch_created` tells you whether the branch already existed: when it is
-`true`, `parent_sha` is the base branch's tip; when it is `false`, it is that branch's own
-tip and not the branch point.
+Keep `commit_sha` and `parent_sha`: step 4 fetches at the first and compares against the
+second. When `branch_created` is `true`, `parent_sha` is the base branch's tip; when
+`false`, it is that existing branch's own tip, not the branch point.
 
 #### The pull request fallback
 
 Read the failure before choosing the route. `commit_files.py` exits non-zero with the
-API's own body on stderr, and **only one** of those failures means "a pull request is
-required".
+API's body on stderr, and **only one** failure means "a pull request is required".
 
 **The test is the message, not the status code.** GitHub reports this refusal under more
 than one status: a repository rule that blocks the ref update returns **422**, and other
@@ -231,13 +230,12 @@ FAILED (update ref) 403: {"message":"Changes must be made through a pull request
 | The failure | Route |
 | --- | --- |
 | A 403 or a 422 whose body says the change must be made through a pull request | the fallback below, ending `PROPOSED` |
-| A 422 whose body says anything else — a stale parent, or nothing to commit | `BLOCKED`, with the error as it came |
-| Anything else — 401 (bad token), 404 (no access or wrong repo), a 5xx | `BLOCKED`, with the error as it came |
+| A 422 whose body says anything else — a stale parent, or nothing to commit | 🔴 Stopped, with the error as it came |
+| Anything else — 401 (bad token), 404 (no access or wrong repo), a 5xx | 🔴 Stopped, with the error as it came |
 
 A refusal that does not match that message is not a repo rule, and retrying it on a branch
-reproduces it. Where it does match, the same change goes by the route the repo allows:
-stage again as in step 1 with these three flags changed, then commit, then open the pull
-request.
+reproduces it. Where it matches, stage again as in step 1 with these three flags changed,
+then commit, then open the pull request.
 
 ```
     --branch change-example-skill --base-branch main \
@@ -258,18 +256,18 @@ if it already exists, and `branch_created` is then `false`. That is deliberate: 
 attempt after a fix lands on the same branch and the same pull request. So check before
 opening, with `pr_ops.py list --owner example-owner --repo example-repo --state open`:
 
-- **A pull request already has that head branch** — do not open a second one. Report its
+- **A pull request already has that head branch** — do not open a second one. Hand back its
   number and URL, say the branch carries another commit now, and stop. `pr_ops.py open`
   fails with 422 for a head branch that already has one.
 - **The branch exists with no pull request** — open it. This is the resumption case.
 
-Report which route was taken, and quote the refusal when there was one, because that is
-what tells a reader the repo's rules are in force.
+Hand back which route was taken, quoting the refusal when there was one: it shows the
+caller the repo's rules are in force.
 
 ### 4. Fetch the proof inputs, at the commit
 
-Step 5's inputs are created only now, by the commit in step 3, and are fetched at its SHA
-— never at the branch, which moves and proves nothing about the commit:
+Fetch step 5's inputs at the commit's SHA, never at the branch, which moves and proves
+nothing about the commit:
 
 ```
 python3 get_files.py --owner example-owner --repo example-repo \
@@ -283,9 +281,8 @@ python3 repo_browse.py compare --owner example-owner --repo example-repo \
     > /tmp/commit-changed.json
 ```
 
-`repo_browse.py compare` wraps the compare endpoint and normalises the field-name
-disagreement between GitHub's payload and the wrapper that reports it, so prefer it to the
-raw endpoint. What lands in `/tmp/commit-changed.json` is what `--changed` reads:
+Prefer `repo_browse.py compare` to the raw endpoint: it normalises GitHub's field names.
+`/tmp/commit-changed.json` is what `--changed` reads:
 
 ```json
 {
@@ -299,14 +296,13 @@ raw endpoint. What lands in `/tmp/commit-changed.json` is what `--changed` reads
 }
 ```
 
-Note `files_truncated`, and note that a merge commit returns no files at all. Step 5
-handles both, which is why its `unreliable` list exists.
+Note `files_truncated`, and that a merge commit returns no files; step 5's `unreliable`
+list handles both.
 
 ### 5. Prove it
 
-Two checks, on the committed files rather than on the staged copy. List a removal under
-`--deleted`, not `--intended`: both count as intended, but a removal gets its own list so
-that a removal which did not happen can be reported.
+Two checks, on the committed files rather than the staged copy. List a removal under
+`--deleted`, not `--intended`, so a removal that did not happen can be reported.
 
 ```
 python3 verify_write.py --readback-dir /tmp/readback \
@@ -346,9 +342,8 @@ Read the lists, because they say different things:
 - **`deleted_missing`** is a path listed under `--deleted` that the commit did not remove.
   A removal is silent in the repo — the file simply stays — so this is the only thing that
   catches it. It is a failure.
-- **`shrunk`** is a file the commit removed more lines from than it added. Legitimate in a
-  cleanup, and also what an overwrite looks like, so it is reported and never failed on its
-  own. A large removal on a file nobody meant to rewrite is worth stopping over.
+- **`shrunk`** is a file the commit removed more lines from than it added: legitimate in a
+  cleanup, and also what an overwrite looks like, so reported and never failed on its own. A large removal on a file nobody meant to rewrite is worth stopping over.
 - **`unreliable`** means the changed set cannot support a verdict, so `missing`, `extra`
   and `deleted_missing` were left empty rather than filled with a guess. It fills on
   `files_truncated`, on 300 files or 250 commits — GitHub's caps, which it does not signal
@@ -359,9 +354,9 @@ Read the lists, because they say different things:
   `--allow-absent-readback` was passed. Reported, and not a failure.
 
 A mismatch, a missing path, an extra path or an unmade removal is a failure. The commit
-already exists at this point, so report it rather than pretending the write did not happen.
+already exists at this point, so hand it back rather than pretending the write did not happen.
 
-| What you see | Outcome | What to say |
+| What you see | Outcome | What to hand back |
 | --- | --- | --- |
 | `mismatched` non-empty | `STOP_VERIFY_FAILED` | which files differ; the committed bytes are not what was staged |
 | `extra` non-empty | `STOP_SCOPE` | which paths nobody meant to touch; suspect a lost update |
@@ -371,11 +366,22 @@ already exists at this point, so report it rather than pretending the write did 
 | `absent` non-empty | neither | the base file is gone, not moved |
 | all clean | `LANDED`, or `PROPOSED` if the fallback ran | the change is in place, or waiting to be merged |
 
-### 6. Report
+### 6. Hand back
 
-Report the folder, the route, the commit or the pull request, the removals, and the result
-of both checks, including the guard's absence where step 2 was skipped. Say plainly that a
-`PROPOSED` change is unmerged and waiting for whoever merges it.
+The outcome, the folder, the route, the commit or pull request link, the removals, both
+checks' results, and the guard's absence where step 2 was skipped.
+
+## Ending
+
+Called by another skill: hand back the outcome and findings as plain facts; the caller
+writes the one reply. Asked directly: reply as [write-run-report](../write-run-report/SKILL.md)
+says, keeping outcome words, commit ids and check output in the run's working notes.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | `LANDED` |
+| 🟡 Your turn | `PROPOSED`: ready on GitHub, but not in effect until they merge it. After they confirm, check it merged and end 🟢. Or an input is missing |
+| 🔴 Stopped | any `STOP_*` outcome, or the repo cannot be read or written |
 
 ## Files
 
@@ -397,9 +403,8 @@ RunWithCredentials(
     command="python3 bluesmarties876-skills-<sha>/api/github-api/scripts/commit_files.py --manifest /tmp/stage-manifest.json")
 ```
 
-Get those scripts from the repo, not from the skill host: `github-api` is a pointer there and
-holds only a credential anchor, so `FetchSkillScripts("github-api")` will not return the
-client. The `github-api` body documents the tarball route. Pass the arguments as one command
+Get those scripts from the repo: on the skill host `github-api` is a pointer holding only a
+credential anchor, so `FetchSkillScripts("github-api")` will not return the client. The `github-api` body documents the tarball route. Pass the arguments as one command
 string: bare `python3` leaves the token unset and the script exits 2.
 
 `stage_skill.py` flags:

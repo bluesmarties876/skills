@@ -16,14 +16,14 @@ its own for "turn this email into a task".
 
 Platform-agnostic: it discovers the task platform's access at run time (a native
 integration, an MCP server, or an API skill in the knowledge base) and never names one
-platform as the method. If no route to the named platform exists, end `BLOCKED`.
+platform as the method. If no route to the named platform exists, end 🔴 Stopped.
 
 ## Inputs
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The source email: mailbox, conversation id, latest message id | steps 1, 3 | `NEEDS_CONTEXT` |
-| The action in one sentence (what the person will do) | steps 2, 3 | interactive: ask. Unattended: `NEEDS_CONTEXT` |
+| The source email: mailbox, conversation id, latest message id | steps 1, 3 | stop with 🟡 Your turn, asking for it |
+| The action in one sentence (what the person will do) | steps 2, 3 | ask; unattended, stop with 🟡 Your turn |
 | Task platform | step 1 | see the `task-platform` hook in Companions |
 | Settings: project, estimate, priority, due date and time zone, deadline firmness, scheduling flag | step 4 | each one is proposed and must be approved; see step 4 |
 
@@ -66,7 +66,7 @@ description. Decide one of:
 
 | Finding | Do |
 | --- | --- |
-| An open task already covers the action | do not create; report the id; offer to update its settings if the email changes them |
+| An open task already covers the action | do not create; point the person to it; offer to update its settings if the email changes them |
 | A completed task covers an earlier instance of the same recurring thing | create; say in the description that it is a new instance |
 | A cancelled task with the same scope | create only if the person confirms the scope is live again |
 | Nothing matches | create |
@@ -80,7 +80,7 @@ the project is a question.
 Present one proposal with every setting named: name, project, estimate, priority, due
 date with time zone, deadline firmness, scheduling flag, and the description's first line
 (which cites the source email by subject and date). Interactive: ask, and accept
-corrections to any setting. Unattended: end `DONE_WITH_CONCERNS` with the proposal.
+corrections to any setting. Unattended: send the proposal through the `follow-ups` hook and end 🟡 Your turn.
 
 A due date the email states is proposed as stated. A due date the email only implies
 (a launch on Friday, a reply "by end of week") is proposed with the implication named,
@@ -111,9 +111,10 @@ captured, and the caller must not close the source email on the strength of it.
 
 ## Ending
 
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says. When a skill calls this one, hand back your status and findings as plain facts; the caller writes the one reply.
+
 | Status | When |
 | --- | --- |
-| `DONE` | The task was created with the approved settings and read back, or an existing task was found and reported. |
-| `DONE_WITH_CONCERNS` | Unattended proposal awaiting approval; or a read-back mismatch the person should look at. |
-| `BLOCKED` | No route to the platform, or the create or read failed three times. |
-| `NEEDS_CONTEXT` | No source email or no action sentence. |
+| 🟢 Finished | The task was created with the approved settings and read back, or an open task already covers it. |
+| 🟡 Your turn | The proposal awaits approval, a read-back mismatch needs checking, or the source email or action is missing. |
+| 🔴 Stopped | No route to the platform, or the create or read failed three times. |

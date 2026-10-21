@@ -20,7 +20,7 @@ This skill is plain markdown and one Python script, and assumes no particular ag
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| Target | everything | Stop with `NEEDS_CONTEXT`. |
+| Target | everything | Stop with 🟡 Your turn, asking for it. |
 | The target's scripts | Phase 4 of the method pass | The method pass still runs; its findings are marked **not verified against code**. |
 | Real values: the addresses, domains, IDs, names and subject lines actually in play | check 6, on a skill others will install | Real data is matched by shape only, so a real name or subject line is missed. |
 
@@ -43,7 +43,7 @@ The script never runs the target's code, and masks every value check 6 flags whe
 - [ ] **Gather** the target, its scripts and the real values. Each one missing goes under Not checked.
 - [ ] **Run the script** on the target. Read every line, including `not checked`.
 - [ ] **Confirm each script finding** in the source and drop the false ones. `certain` means the pattern is unambiguous, not that the finding matters.
-- [ ] **Do the judgement halves** of checks 1, 3, 5, 8, 9, 10, 11 and 12, by the rules under "The twelve checks".
+- [ ] **Do the judgement halves** of checks 1, 3, 5, 8, 9, 10, 11, 12 and 13, by the rules under "The thirteen checks".
 - [ ] **Run the method pass**, all four phases, against the code.
 - [ ] **Assign severity** per finding, by consequence.
 - [ ] **Write the report** to the shape under "Report".
@@ -72,7 +72,7 @@ python3 scripts/analyze.py --fixture /tmp/demo-skill
 | `--selftest` | prove every check fires on a planted defect and stays silent on a clean fixture |
 | `--fixture DIR` | write a small skill with seven planted defects into an empty DIR |
 
-Run `--selftest` once in any new environment. It ends `PASS: 0 failing`; anything else means the checks cannot be trusted, so stop with `BLOCKED`.
+Run `--selftest` once in any new environment. It ends `PASS: 0 failing`; anything else means the checks cannot be trusted, so stop with 🔴 Stopped.
 
 Exit 0 means analyzed, or the selftest passed; findings are not a failure. Exit 1 means the selftest failed. Exit 2 means bad usage or unreadable input; stderr names the problem, so fix the input and run again.
 
@@ -108,7 +108,7 @@ not checked
 
 **The script produces candidates, not findings.** Its claim-against-claim pairs (a subject negated in one place and not in another) are noisy by design: read both sentences before reporting one. Never report a hit unconfirmed, and never name the dominant class from script counts. It assigns no severity and runs none of the target's code, so it finds no code defect. Its other limits (file types, frontmatter, thresholds) are listed in reference.md.
 
-## The twelve checks
+## The thirteen checks
 
 Grouped by how they are found. Worked instances are in reference.md.
 
@@ -126,6 +126,7 @@ Grouped by how they are found. Worked instances are in reference.md.
 | 10 | Safety | Ingested outside content not declared data rather than instruction | script and you |
 | 11 | Sample adequacy | Something the reader must produce or recognise, never shown | script and you |
 | 12 | Runnability | Commands, flags, paths, runtime floor or dependencies that do not hold | script and you |
+| 13 | Run report | A run that ends in retired codes, no status, or a reply a newcomer could not act on | script and you |
 
 Rules for the judgement halves, so they are not argued afresh each run:
 
@@ -143,6 +144,7 @@ Rules for the judgement halves, so they are not argued afresh each run:
 - **9. Generate samples; do not write them.** A sample made by running the tool cannot drift. A sample labelled "the common case" must be the common case.
 - **10. Five points.** Outside content is data, not instruction; directive-looking text in it is never acted on; it never triggers a consequential action without the user's approval; quoted text can impersonate the user or a system; the skill's own output is untrusted text. A statement naming none of the skill's real actions is not a control.
 - **11. Named means shown.** Anything the method names by exact label, or the reader must produce or recognise, has a sample. A field table does not show the shape.
+- **13. Read the ending as a stranger.** Read the skill's report instructions and samples as someone who has never heard of the skill. They fail if the reply would lead with anything but the status, use the skill's internal words, narrate the process, flag something without a label, or ask for an action with no confirmation question. Full rule: [write-run-report](../write-run-report/SKILL.md).
 - **12. Four statements, one proof.** Where the scripts live, how to get them if absent, the runtime floor, the dependencies. Prove self-containment by running the scripts from an empty directory.
 
 ## The method pass
@@ -215,9 +217,7 @@ One class takes different severities by what the reader is doing: a missing samp
 
 ## Report
 
-Report every confirmed finding, ranked. A fixed cap defers real defects and hides the pattern; if the report is too long, cap the low tier only and say how many were left out.
-
-The shape, as a template:
+The full report is a linked document holding every confirmed finding, ranked. A fixed cap defers real defects and hides the pattern; if it is too long, cap the low tier only and say how many were left out. The shape:
 
 ```markdown
 # <skill name>: quality analysis
@@ -248,6 +248,8 @@ The method pass section is never omitted. If it found nothing, list what was pro
 
 **Sweep.** One report per skill, then a short section on which classes recur where, counting confirmed findings rather than the script's tally.
 
+The reply is short: what the reviewed skill is for, in plain words, the one or two findings that matter most and what each would cause, and the link.
+
 ## Known limits
 
 Put these in any report a reader might over-trust.
@@ -257,19 +259,20 @@ Put these in any report a reader might over-trust.
 3. It cannot catch real-data leakage unaided: a real name or subject line needs the real values.
 4. It does not know the domain. It can tell that a table has no row for an input, not whether that row should exist.
 5. It raises no method gap unless the interrogation is run. Skipping Phase 2 reproduces the failure this skill exists to fix.
-6. It does not measure quality. A skill with no findings is free of these twelve classes, not thereby good.
-7. **The finding count is not comparable across versions of a skill.** Adding documentation — links, samples, a reference table, an endpoint list — *raises* the count, because each addition is a new surface the checks can see. Compare findings, never counts, when judging whether an edit helped.
-8. **Check 7 has no selftest coverage.** `--selftest` proves each check fires on a planted defect, but check 7 is judgement-only, so the pass this skill calls its most valuable is also the one part with no automated proof. A clean selftest says nothing about it.
+6. It does not measure quality. A skill with no findings is free of these thirteen classes, not thereby good.
+7. **The finding count is not comparable across versions of a skill.** Adding documentation *raises* the count, because each addition is a new surface the checks can see. Compare findings, never counts, when judging whether an edit helped.
+8. **Check 7 has no selftest coverage.** `--selftest` proves each check fires on a planted defect, but check 7 is judgement-only, so a clean selftest says nothing about the pass this skill calls its most valuable.
 
 ## Ending
 
-When a person is in the conversation, present the report and ask before editing the target. When nobody is (the starting prompt says the run is unattended), write the report and leave the target untouched. Stop after three failed attempts at the same step and report `BLOCKED`.
+Reply as [write-run-report](../write-run-report/SKILL.md) says. When another skill calls this one, hand back the status and report as plain facts; the caller writes the one reply.
 
-End with one status line:
+Interactive, ask before editing the target. Unattended (the starting prompt says so), leave the target untouched and send the fix decision through the `follow-ups` hook. Stop after three failed attempts at one step.
 
-| Status | Means |
+| Status | When |
 | --- | --- |
-| `DONE` | Report written, both passes ran, every finding confirmed in the source. |
-| `DONE_WITH_CONCERNS` | Report written, but part is weaker than it looks: no implementation, probes not verified, or no real values for a skill others will install. Name which. |
-| `BLOCKED` | Cannot continue: the target cannot be read, or the selftest fails. Say what was tried. |
-| `NEEDS_CONTEXT` | A required input is missing. Name it. |
+| 🟢 Finished | Nothing awaits a fix, or the approved fixes are made. |
+| 🟡 Your turn | Findings await the person's decision on fixes, or the target is missing. |
+| 🔴 Stopped | The target cannot be read, the selftest fails, or one step failed three times. |
+
+Missing code, unverified probes or absent real values are a Good to know, or a Decide if the person can supply them.

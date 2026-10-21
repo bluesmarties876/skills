@@ -44,6 +44,7 @@ CHECKS = {
     10: "safety",
     11: "sample adequacy",
     12: "runnability",
+    13: "run report",
 }
 
 DEFAULT_LIMIT = 20  # findings printed per check; the rest are counted, never dropped
@@ -907,6 +908,10 @@ OPEN_NAMES = {"agents.md", "skill.md"}  # file names any context can assume
 MIME_TOP = ("application", "audio", "example", "font", "image", "message", "model", "multipart",
             "text", "video")  # top-level types a media type may start with
 NOT_CONTEXT = {"com", "org", "net", "io", "dev", "app", "www", "api", "co", "http", "https"}
+# The library's own run-report vocabulary (write-run-report): status and label
+# words written capitalised in every skill, never a product or a person.
+REPORT_WORDS = {"Finished", "Your", "Waiting", "Stopped", "Do", "Decide", "Saved", "Good", "Done", "Something",
+                "Not"}
 CONTEXT_KINDS = {"host", "owner/name", "product or tool name", "proper noun", "package scope"}
 PLATFORM_CLIS = ("gh", "glab", "az", "aws", "gcloud", "gsutil", "vercel", "netlify", "heroku", "flyctl", "wrangler",
                  "supabase", "firebase", "doctl", "railway", "stripe")
@@ -1047,7 +1052,7 @@ def collect_specifics(s):
                 for i, t in enumerate(toks):
                     if i == 0 or toks[i - 1] in ".:!?\"“(" or not re.fullmatch(r"[A-Z][a-z]{2,}", t):
                         continue
-                    if t.lower() not in lowers and t not in runtime:
+                    if t.lower() not in lowers and t not in runtime and t not in REPORT_WORDS:
                         proper.setdefault(t, []).append((d, n))
     for t, where in proper.items():
         if len(where) >= 2 and not CAMEL.fullmatch(t):
@@ -1924,10 +1929,47 @@ def extract_model(s):
 
 
 # --------------------------------------------------------------------------
+# Check 13 — run report
+
+RETIRED_CODES = {"DONE", "DONE_WITH_CONCERNS", "BLOCKED", "NEEDS_CONTEXT"}
+RETIRED_SHAPE = re.compile(r"^\s*STATUS:\s*(DONE_WITH_CONCERNS|NEEDS_CONTEXT|BLOCKED|DONE)\b")
+RETIRED_SAID = re.compile(r"\b(retired|legacy|replaced)\b", re.I)
+RUN_STATUS = re.compile("\U0001F7E2|\U0001F7E1|\U0001F535|\U0001F534")  # the four status emoji
+REPORT_SKILL = "write-run-report"
+
+
+def check_run_report(s, ctx):
+    """The script's half: a retired status code still in use, or no run
+    status anywhere. Whether the reply reads well to a newcomer is judgement."""
+    out = []
+    hits = []
+    for d in s.docs:
+        for n, line in enumerate(d.lines, 1):
+            if RETIRED_SAID.search(line):
+                continue
+            codes = {c.strip() for c in CODE_SPAN.findall(line)} & RETIRED_CODES
+            if codes or RETIRED_SHAPE.search(line):
+                hits.append((d, n, sorted(codes) or [RETIRED_SHAPE.search(line).group(1)]))
+    if hits:
+        names = sorted({c for _, _, cs in hits for c in cs})
+        out.append(finding(13, loc(hits[0][0], hits[0][1]),
+                           f"uses the retired status codes {', '.join(names)} on {len(hits)} line(s). A run now "
+                           "ends with one of the four statuses in CONVENTIONS.md, Ending a run.", certain=True))
+    text = "\n".join(d.text for d in s.docs)
+    fills = companion_info(s)[2]  # a companion does its piece and hands back; its parent ends the run
+    if not fills and not RUN_STATUS.search(text) and REPORT_SKILL not in text:
+        out.append(finding(13, loc(s.main, 1),
+                           "names none of the four run statuses and does not say it hands its result back to a "
+                           "calling skill, so how a run ends for the person is undefined."))
+    return out
+
+
+# --------------------------------------------------------------------------
 # Running
 
 CHECK_FUNCS = (check_contradiction, check_metadata, check_agnostic, check_duplication, check_load_gate,
-               check_real_data, check_limits, check_samples, check_safety, check_adequacy, check_runnability)
+               check_real_data, check_limits, check_samples, check_safety, check_adequacy, check_runnability,
+               check_run_report)
 
 
 def analyze(s, real_values=(), max_words=DEFAULT_MAX_WORDS, contexts=()):
@@ -1963,7 +2005,7 @@ def analyze(s, real_values=(), max_words=DEFAULT_MAX_WORDS, contexts=()):
                                   "matched; a real name or subject line will not be caught")
     ctx["not_checked"].append("7 undefined state: judgement only. Run the method pass; the model below is a "
                               "starting point, not the model")
-    ctx["not_checked"].append("judgement halves of checks 1, 3, 5, 8, 9, 10, 11 and 12")
+    ctx["not_checked"].append("judgement halves of checks 1, 3, 5, 8, 9, 10, 11, 12 and 13")
     if s.skipped:
         ctx["not_checked"].append("files not read (not markdown or a script): " + ", ".join(s.skipped))
     if s.unread_links:
@@ -2082,6 +2124,13 @@ A `--json` run prints one object per note:
 ```
 
 When `check` finds a note with no date line it prints `undated note, no date line: <file>` and exits 1.
+
+## Ending
+
+| Status | When |
+| --- | --- |
+| \U0001F7E2 Finished | Every note was filed or left where it was. |
+| \U0001F534 Stopped | The notes folder could not be read. |
 """,
     "scripts/tidy.py": """import argparse
 import json
@@ -2206,18 +2255,31 @@ INJECTIONS = [
     (12, "a script name that matches two files", _both(
         _append("scripts/old/tidy.py", "import sys\n"),
         _append("SKILL.md", "\n```\npython3 tidy.py check --src notes\n```\n"))),
+    (13, "a retired status code", _append("SKILL.md", "\nIf the notes folder is missing, stop with `NEEDS_CONTEXT`.\n")),
+    (13, "the retired escalation shape", _append("SKILL.md", "\n```\nSTATUS: BLOCKED\nREASON: no notes\n```\n")),
+    (13, "no run status at all", lambda files: files.__setitem__(
+        "SKILL.md", files["SKILL.md"].split("\n## Ending\n")[0] + "\n")),
     (3, "a document filename the skill does not carry", _append(
         "SKILL.md", "\nCopy each note into `notes.md` before the run.\n")),
 ]
 
 STILL_CLEAN = [
+    ("run-report status and label words in running text", _append(
+        "SKILL.md", "\nWhen the folder is empty, end Finished. When a note needs a person, end Your turn and say "
+                    "Decide which date it gets. Good to know: Saved for later items are kept.\n")),
+    ("a retired code named as retired", _append(
+        "SKILL.md", "\nA reply that still says `DONE`, a retired code, is read as Finished.\n")),
+    ("an inner skill that hands its result to the write-run-report caller", lambda files: files.__setitem__(
+        "SKILL.md", files["SKILL.md"].split("\n## Ending\n")[0]
+        + "\n## Ending\n\nCalled by other skills: it hands its result back, and the caller writes the reply "
+          "as write-run-report says.\n")),
     ("a second script with the same name elsewhere", _append("scripts/old/tidy.py", "import sys\n")),
     ("a hook with a \"Without one\" outcome", _append("SKILL.md", COMPANIONS)),
     ("a link to a sibling skill", _append("SKILL.md", "\nTo archive notes, see [archive](../archive-notes/SKILL.md).\n")),
     ("a status negated in one branch and not in another", _append(
-        "SKILL.md", "\n## Ending\n\n| Status | Means |\n| --- | --- |\n| `DONE` | Every note was sorted. |\n"
-                    "| `BLOCKED` | The run stopped. |\n\nIf the notes folder cannot be read, stop with `BLOCKED`.\n\n"
-                    "## Locks\n\nOn a lock error, stop with `BLOCKED`.\n")),
+        "SKILL.md", "\n## Results\n\n| Status | Means |\n| --- | --- |\n| `sorted` | Every note was sorted. |\n"
+                    "| `halted` | The run stopped. |\n\nIf the notes folder cannot be read, end `halted`.\n\n"
+                    "## Locks\n\nOn a lock error, end `halted`.\n")),
     ("a negation beside a different subject", _append(
         "SKILL.md", "\n## Order\n\n`sort` reads every note, so no separate `check` run is needed.\n\n## Speed\n\n"
                     "`sort` is fast.\n")),
@@ -2294,6 +2356,13 @@ python3 scripts/nested.py notes check --src notes
 | --- | --- |
 | `moved` | The note was filed under its date. |
 | `kept` | The note has no date line; it stays where it was. |
+
+## Ending
+
+| Status | When |
+| --- | --- |
+| \U0001F7E2 Finished | Every note was filed or left where it was. |
+| \U0001F534 Stopped | The notes folder could not be read. |
 """,
     "scripts/nested.py": """import argparse
 import sys

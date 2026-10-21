@@ -29,7 +29,7 @@ the `task-sync-writeback` hook and needs its own approval every time.
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The pair: source platform + account, target platform + account | step 1 | look it up in `task-sync-pairs`; if the hook lists several, interactive: ask which. Unattended: `NEEDS_CONTEXT` |
+| The pair: source platform + account, target platform + account | step 1 | look it up in `task-sync-pairs`; if the hook lists several, ask which (unattended: through `follow-ups`) |
 | Mode: `review`, `approve`, or `unattended` | every step | interactive: `approve`. Unattended prompt: `unattended` |
 | Comment window start for tasks with no back-link (followed tasks, first run) | step 3 | the pair's last finished run from the state store named by `task-sync-pairs`; else interactive: ask, unattended: 7 days, and say so |
 | Batch size (items per proposal pass) | step 5 | 15 |
@@ -42,8 +42,8 @@ the `task-sync-writeback` hook and needs its own approval every time.
 | `approve` | yes | yes, as structured questions | only what the person approved, in this run |
 | `unattended` | yes | yes, as a report for later | none: no create, update, complete, comment or link |
 
-`unattended` is the only mode an automation may run. It stops with `DONE_WITH_CONCERNS`
-listing the proposals `approve` would have asked.
+`unattended` is the only mode an automation may run. It sends the proposals `approve`
+would have asked through the `follow-ups` hook and ends 🟡 Your turn.
 
 ## Safety
 
@@ -72,7 +72,7 @@ listing the proposals `approve` would have asked.
 A companion opens by naming the hook it fills. Resolve the setting named after each hook as
 [Workspace settings](../../../../CONVENTIONS.md#workspace-settings) says, for the person
 whose source and target accounts are being synced. If the setting names a skill that
-cannot be read, stop with `NEEDS_CONTEXT` naming it.
+cannot be read, stop with 🟡 Your turn, asking for it to be fixed.
 
 ## The back-link
 
@@ -107,7 +107,7 @@ Source: <platform> comment <comment id> on task <source task id> · <url> · see
 Read `task-sync-pairs`, `task-sync-writeback`, `task-platform`, `triage-sensitive` and
 `triage-approval-style`. Resolve the pair to concrete account, workspace and user ids on
 both platforms, and confirm by a read on each that the connected identity is the one the
-pair names. If either platform cannot be reached, end `BLOCKED` naming it.
+pair names. If either platform cannot be reached, end 🔴 Stopped naming it.
 
 Keep a ledger for the run: every source id, its outcome, the decision, and every write
 (what, which id, result).
@@ -131,7 +131,7 @@ Following pagination to the end:
 - **Recently closed:** source tasks in scope completed since the comment window start, so
   an open target copy of a finished task can be found.
 
-If a listing fails or comes back truncated, end `BLOCKED`. A partial source read must never
+If a listing fails or comes back truncated, end 🔴 Stopped. A partial source read must never
 produce "nothing to do".
 
 ### 3. Read the comments that concern the person
@@ -210,8 +210,8 @@ for anything `triage-sensitive` marks ask-first.
 
 ### 5. Propose, then collect decisions
 
-Write the batch as a short report grouped by outcome, with one line per item: source name,
-source project, the outcome, and the proposed change. Put the coverage numbers at the top:
+Write the batch as a short report grouped by what each item needs, in plain words, one line
+per item: source name, source project, and the proposed change. Put the coverage numbers at the top:
 mirror set size, already linked, proposed links, proposed creates, unresolved.
 
 - `review` and `unattended`: the report is the output. Go to step 8.
@@ -257,15 +257,14 @@ read back did not happen.
 If unresolved items remain and no stop state applies, go to step 5 with the next batch.
 
 When nothing is unresolved, re-read the source mirror set and the target, and write the
-**coverage report**: one row per open source task in scope with its target task id, or
-the reason it has none (the person declined, waiting on a decision). Then list comments by
-outcome. If the pair names a state store, record the run's finish time, status and counts
+**coverage report** to the run's working notes: one row per open source task in scope with
+its target task id, or the reason it has none (the person declined, waiting on a
+decision), then the comments. The reply gives the counts. If the pair names a state store, record the run's finish time, status and counts
 there; that time is the next run's comment window start.
 
 Stop when: every source task in scope is linked or explicitly declined and every kept
-comment has an outcome (`DONE`); the person stops the run; a write fails three times for
-the same reason (`BLOCKED`); or a hook names a skill that cannot be read
-(`NEEDS_CONTEXT`).
+comment has an outcome; the person has stopped the run; a write fails three times for the same
+reason; or a hook names a skill that cannot be read.
 
 ## Checklist
 
@@ -283,9 +282,11 @@ the same reason (`BLOCKED`); or a hook names a skill that cannot be read
 
 ## Ending
 
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
+
 | Status | When |
 | --- | --- |
-| `DONE` | Every source task in scope is linked or explicitly declined, every kept comment has an outcome, and every write was verified. |
-| `DONE_WITH_CONCERNS` | `review` or `unattended` finished with proposals pending; or items were kept unresolved by the person's choice. List them. |
-| `BLOCKED` | A platform could not be read, a listing was truncated, or a write failed three times for the same reason. |
-| `NEEDS_CONTEXT` | No pair could be resolved, or a hook names a skill that cannot be read. |
+| 🟢 Finished | Every source task in scope is linked or declined, every kept comment has an outcome, and every write was verified. |
+| 🟡 Your turn | Proposals await your decisions (`review`, `unattended`); or no pair could be resolved, or a hook's skill cannot be read. |
+| 🔵 Waiting | Items the person left unresolved are recorded through `follow-ups`; the rest is verified. |
+| 🔴 Stopped | A platform could not be read, a listing was truncated, or a write failed three times for the same reason. |

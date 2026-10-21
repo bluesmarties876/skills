@@ -21,9 +21,8 @@ fetched. Run it with a plain shell command, never `RunWithCredentials`.
 
 ## Scope
 
-What this skill is for, and what it is not. It is deliberately narrower than the
-scope note an adopter ends up with — it names no other skill and no single
-platform — so widen it where your own library has neighbours to route between.
+What this skill is for, and what it is not. It names no other skill and no single
+platform; widen it where your own library has neighbours to route between.
 
 - "Infer the motion project for this task."
 - "Run infer-project — which Asana project does this belong to?"
@@ -124,15 +123,16 @@ sees shared words; you see meaning. Weigh everything available:
 
 ### 5. Report
 
-A **compact table**: candidate, confidence, and the evidence for each.
+The status line, then a **compact table**: candidate, confidence, and the evidence for
+each.
 
 | Project | Confidence | Evidence |
 |---|---|---|
 | Ceramics Course | High | Task text names "ceramics"; project description covers the autumn launch |
 | Sessions with Ravi | Low | Shares only the person's name; project is about member sessions |
 
-Then a single line naming your pick — or, when it is close, a line saying you need them
-to choose. Nothing else. No restating the task, no summary of the platform, no offer to
+Then a single line naming your pick — or, when it is close, a **Decide** question asking
+them to choose, your recommendation first. Nothing else. No restating the task, no summary of the platform, no offer to
 file it.
 
 ## The confidence threshold
@@ -174,8 +174,8 @@ two with a line asking which.
 
 ## Failure modes
 
-- **Naming a tool as the method.** "Use the motion-api skill" in the runbook, rather than
-  "use whatever access exists". This is the failure that breaks the skill's whole point.
+- **Naming a tool as the method**, rather than "use whatever access exists". This breaks
+  the skill's whole point.
 - **A truncated project list.** One page of results, then reasoning confidently over an
   incomplete set. Paginate.
 - **Trusting the score over the meaning.** The top-scoring project is a candidate, not a
@@ -184,13 +184,22 @@ two with a line asking which.
   not a decision.
 - **Answering anyway when nothing fits.** A confident-sounding wrong project is worse
   than "none of these look right".
-- **Padding the answer.** The output is a table and a line. Not an essay about the
-  platform, the candidates, and your reasoning process.
+- **Padding the answer.** The output is a status line, a table and a line, not an essay about your
+  reasoning.
 
 ## Files
 
 - `scripts/infer_project_tools.py` — `extract` (find and normalise projects in an
-  arbitrary API response) and `rank` (score and shortlist against task text). Standard
-  library only, no credentials, no network calls: it works on JSON you already fetched,
-  so it never needs to know which platform produced it. Importable — `find_collections`,
+  arbitrary API response) and `rank` (score and shortlist against task text). It never
+  needs to know which platform produced the JSON. Importable — `find_collections`,
   `normalise`, `rank_projects` and `score_project` are all usable directly.
+
+## Ending
+
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says. When a skill calls this one, hand back your status, table and pick as plain facts; the caller writes the reply.
+
+| Status | When |
+| --- | --- |
+| 🟢 Finished | A clear leader: table and pick line. |
+| 🟡 Your turn | A close call, or nothing fits: table, then the question. |
+| 🔴 Stopped | No route to the named platform's projects. |

@@ -34,11 +34,11 @@ Use supplied material when there is any; interview for what is missing.
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| Who the readers are (one specific audience, or a short list) | step 2 | interactive: ask; if the person declines, `NEEDS_CONTEXT`. Unattended: `NEEDS_CONTEXT` |
-| What the business offers | step 2 | interactive: ask; if the person declines, `NEEDS_CONTEXT`. Unattended: `NEEDS_CONTEXT` |
+| Who the readers are (one specific audience, or a short list) | step 2 | interactive: ask; if the person declines, 🟡 Your turn, asking for it. Unattended: the same |
+| What the business offers | step 2 | interactive: ask; if the person declines, 🟡 Your turn, asking for it. Unattended: the same |
 | The questions sales, support or the founder hear most | step 3 | interactive: ask. Unattended: derive from the offer, mark every resulting topic `assumed` |
 | Existing posts or categories | step 7, and as topics to place | treat the blog as new |
-| Keyword, search-performance or ticket exports | evidence for steps 3 and 4 | evidence comes from answers alone; say so under Not checked |
+| Keyword, search-performance or ticket exports | evidence for steps 3 and 4 | evidence comes from answers alone; note it in the run's working notes |
 | What sets the business apart | the tilt in step 2 | ask once; if still unknown, write `tilt: not yet defined` and continue |
 
 **Interview, at most six questions, one or two at a time.** Ask only for what the supplied
@@ -72,9 +72,9 @@ person asks for it after reading the proposal.
 Read all supplied material before asking anything. List what it answers against the
 inputs table, then interview for the rest.
 
-A file that cannot be read is skipped and named under **Not checked**; the run continues
+A file that cannot be read is skipped and named in the run's working notes; the run continues
 on the rest. Only when nothing supplied can be read, after three attempts, and there is no
-person to interview, does the run end `BLOCKED`.
+person to interview, does the run end 🔴 Stopped.
 
 Where supplied data and the person's answers disagree, use the data for what readers ask
 and search, and the person for what the business wants in scope. Name the disagreement
@@ -136,13 +136,13 @@ in both. If the two jobs are equally served, the categories are probably one cat
 Fewer than five usually means the fence is too tight or the jobs too coarse; more than
 eight usually means categories are really subtopics. Fix the grouping rather than
 publishing either. If a narrow business genuinely has fewer than five distinct jobs after
-regrouping, return the categories it has, say why under **Gaps**, and end
-`DONE_WITH_CONCERNS`.
+regrouping, return the categories it has, say why under **Gaps**, and tell the
+person as a **Good to know**.
 
 When there are several audiences whose jobs barely overlap, do not blend them into one
 list. Interactive: ask whether the blog should serve one audience or have a category set
-per audience. Unattended: build for the first-named audience and list the others under
-**Not checked**.
+per audience. Unattended: build for the first-named audience and send the choice of the others
+through `follow-ups` as a **Decide**.
 
 ### 7. Checks
 
@@ -159,20 +159,22 @@ Run each against the proposed list, and fix or report what fails:
 
 ## Output
 
-Return, in this order, and nothing else:
+The reply, in this order:
 
-1. **Mission** and **tilt**, one line each.
-2. **Categories**, as a table.
-3. **Gaps**: stages still thin, and why that is accepted or how to close it.
-4. **Dropped**: topics outside the fence or navigational, one line each with the reason.
-5. **Not checked**: inputs that were missing and what that weakens.
-6. **Next step**: test the labels with readers — an open card sort to check the names, then
-   a tree test to check people can find a known post. One line; no kit.
-7. The status line.
+1. The status line ([Ending](#ending)).
+2. **Mission** and **tilt**, one line each.
+3. **Categories**, as a table; when long, in a linked document with the rest.
+4. A gap that weakens the result (`assumed` evidence, no data beyond answers) as **Good
+   to know**; a stage gap or audience choice that is theirs as **Decide**.
+5. In the document, or after the table: **Gaps** (stages still thin, why accepted or how
+   to close), **Dropped** (one line each, with the reason), and **Next step**: an open card
+   sort to check the names, then a tree test to check people can find a known post.
 
 A sample, for an invented business, trimmed to three of six categories:
 
 ```markdown
+🟢 **Finished** — your blog categories are ready.
+
 **Mission:** For owners of small independent bike shops, we explain the numbers and
 decisions behind running a workshop, so they can stay profitable without a finance team.
 **Tilt:** written by people who ran a shop, with real figures.
@@ -183,12 +185,12 @@ decisions behind running a workshop, so they can stay profitable without a finan
 | Choosing shop software | When my spreadsheets break, I want to pick a system, so I can stop losing jobs | Think, Do | point of sale compared; booking tools; switching costs; what each costs in year one | interview Q5; keyword "bike shop POS" |
 | Your first year as a customer | When I've just signed up, I want to get set up fast, so I can see value before renewal | Care | setup checklist; common first-month problems; getting staff to use it | assumed |
 
+**Good to know:** "Your first year as a customer" rests on my guess, not on anything
+customers said, and with no search data, demand is judged from your answers and tickets.
+
 **Gaps:** Care has one category; accepted for now, because there are few customers.
 **Dropped:** "Company news" — no reader job asks for it. "Login help" — navigational; belongs on the support page.
-**Not checked:** no search data was supplied, so demand is judged from interviews and tickets.
 **Next step:** run an open card sort on the six category names, then a tree test.
-
-DONE_WITH_CONCERNS: one category rests on assumption; no search data supplied.
 ```
 
 ## Failure modes
@@ -206,11 +208,10 @@ DONE_WITH_CONCERNS: one category rests on assumption; no search data supplied.
 
 ## Ending
 
-End with one status line:
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
 
 | Status | When |
 | --- | --- |
-| `DONE` | Every category has non-assumed evidence and every stage is covered or the gap is explained. |
-| `DONE_WITH_CONCERNS` | A proposal was returned, but some categories rest on `assumed` evidence, a stage gap is unresolved, or no data beyond answers was supplied. Name which. |
-| `NEEDS_CONTEXT` | Audience or offer is unknown and the run cannot ask (unattended), or the person declined to answer them. Name what is missing. |
-| `BLOCKED` | Nothing supplied can be read after three attempts, and there is no person to interview. Report it in the `STATUS / REASON / ATTEMPTED / RECOMMENDATION` shape from [CONVENTIONS.md](../../../../CONVENTIONS.md#ending-a-run). |
+| 🟢 Finished | A proposal was returned; any assumed evidence or missing data is named as Good to know. |
+| 🟡 Your turn | Audience or offer is unknown and the person declined or the run cannot ask: ask for it. Or a stage gap or audience choice is theirs to decide (unattended: sent through `follow-ups`). |
+| 🔴 Stopped | Nothing supplied can be read after three attempts, and there is no person to interview. |

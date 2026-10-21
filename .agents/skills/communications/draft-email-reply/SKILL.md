@@ -17,16 +17,16 @@ platform is the `mail-platform` companion's piece (see [Companions](#companions)
 
 Run it by [CONVENTIONS.md](../../../../CONVENTIONS.md), including
 [who is watching](../../../../CONVENTIONS.md#who-is-watching): where a step says ask and
-nobody is present, stop with `NEEDS_CONTEXT` instead of waiting.
+nobody is present, stop with 🟡 Your turn instead of waiting.
 
 ## Inputs
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The message to reply to | everything | `NEEDS_CONTEXT` |
+| The message to reply to | everything | ask for it |
 | The mail account, where more than one is connected | everything | ask which; never pick one |
-| What the reply should say: exact wording, or the gist | the new text | `NEEDS_CONTEXT` |
-| The `mail-platform` companion | signature location, reply markup, threading | `NEEDS_CONTEXT`, naming the hook |
+| What the reply should say: exact wording, or the gist | the new text | ask for it |
+| The `mail-platform` companion | signature location, reply markup, threading | ask for the hook to be filled |
 
 ## Safety
 
@@ -133,26 +133,20 @@ Read the saved draft back, in HTML and plain text, and check:
 - Inline images and attachments are carried, or their absence is reported.
 
 A draft is not done until these pass. Fix a failing draft and read it back again. After
-three failed attempts at the same check, stop with `BLOCKED`.
+three failed attempts at the same check, stop with 🔴 Stopped.
 
 ### 9. Report
 
-Say which account, recipients, subject and thread the draft is on, that it is a draft and
-not sent, how much of the chain it carries, and any limitation from steps 3 and 8. Never
-call a trimmed quote the full chain. End with one status line:
-
-| Status | When |
-| --- | --- |
-| `DONE` | The draft is saved and every check in step 8 passed. |
-| `DONE_WITH_CONCERNS` | The draft is saved and checked, but something was not carried, such as an inline image or earlier content that could not be retrieved. Name it. |
-| `BLOCKED` | The draft could not be saved, or a step 8 check still fails after three attempts. |
-| `NEEDS_CONTEXT` | The message, account or wording is ambiguous or missing, no sent mail exists to learn from, or the `mail-platform` hook is unfilled. Name which. |
+Tell the person which account, recipient and subject the draft is on, that it is saved
+and not sent, and anything from steps 3 and 8 it could not carry. Never call a trimmed
+quote the full chain. Ask them to review and send it ("it's waiting in your drafts"),
+then to confirm it is sent.
 
 ## Companions
 
 | Hook | What a companion adds | Without one |
 | --- | --- | --- |
-| `mail-platform` | where the platform keeps a sent signature; the markup of a native reply, its attribution line and its quoted chain; its default styling and plain-text quote style; how a draft is saved as a reply in the right thread; how an inline image is re-attached | stop with `NEEDS_CONTEXT`, naming the hook: a reply in the wrong platform's shape looks forged to whoever receives it |
+| `mail-platform` | where the platform keeps a sent signature; the markup of a native reply, its attribution line and its quoted chain; its default styling and plain-text quote style; how a draft is saved as a reply in the right thread; how an inline image is re-attached | stop and ask for the hook to be filled: a reply in the wrong platform's shape looks forged to whoever receives it |
 
 The mail platform differs from one workspace to the next, so this hook is filled in the
 agent instructions of the workspace the skill runs in, one setting per line:
@@ -160,3 +154,13 @@ agent instructions of the workspace the skill runs in, one setting per line:
 ```
 mail-platform: example-mail-draft-email-reply-format
 ```
+
+## Ending
+
+Reply as [write-run-report](../../meta/write-run-report/SKILL.md) says.
+
+| Status | When |
+| --- | --- |
+| 🟡 Your turn | The draft is saved and checked; the person reviews and sends it, and the reply ends asking "Sent?". Or something must be asked for: the message, account or wording, sent mail to learn from, or the `mail-platform` hook. |
+| 🟢 Finished | The person confirms it is sent, or asked for this draft to be sent and it was. |
+| 🔴 Stopped | The draft could not be saved, or a step 8 check still fails after three attempts. |
