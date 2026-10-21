@@ -38,8 +38,10 @@ is a companion: it fills that hook in every skill that declares it (see
 content, so both fall to their "Without one" outcome.
 
 `feedback-log` and `feedback-reporting` are unset here too. They are filled in each client
-workspace's own agent instructions, because where a workspace keeps its peers' log, and
-whether its person reports dissatisfaction, belong to that workspace.
+workspace's own settings, because where a workspace keeps its peers' log, and whether its
+person reports dissatisfaction, belong to that workspace. How a workspace keeps and
+resolves its settings, including team rules and per-person settings, is
+[Workspace settings](CONVENTIONS.md#workspace-settings).
 
 ## Writing to this repo
 

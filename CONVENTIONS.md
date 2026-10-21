@@ -24,7 +24,7 @@ These are not contexts: the skill's own runtime and dependencies (stated where i
 
 Take the first step that fits:
 
-1. **A value** (a name, a limit, a label, an address) goes in the repo's agent instructions, and the skill reads it from there. The skill names the setting, never the value.
+1. **A value** (a name, a limit, a label, an address) is a setting: it goes in the context's settings ([Workspace settings](#workspace-settings)), and the skill reads it from there. The skill names the setting, never the value.
 2. **Platform wiring every user shares** (the skill drives one code host through its CLI, say) is part of the skill's purpose, not a leak. Either the name carries the platform (`github-ship-thread`), or one scope line in the body declares it: "Works on GitHub through the `gh` CLI." A scope line covers only the platform and tool it names.
 3. **A procedure** that has to be opinionated for one context gets split off. Find the smallest piece that must be opinionated, move only that into a companion skill, and give the generic skill a hook where it plugs in. Everything else stays generic.
 4. **A whole purpose** that only exists in one context (running one repo's CI, say) is a specific skill in its own right, named `<context>-<purpose>`.
@@ -49,15 +49,45 @@ A generic skill declares its hooks in a `## Companions` table. The last column i
 
 A companion opens by naming what it fills, so the link can be checked mechanically: "Fills the `resources` hook of `pr-review`." (or "...of `a` and `b`." for several). It does only its piece and hands back; it never restates the generic method.
 
-When a skill reaches a hook, it reads the repo's agent instructions for a setting named after the hook:
+When a skill reaches a hook, it resolves the setting named after the hook, as [Workspace settings](#workspace-settings) says:
 
-| The agent instructions | The skill |
+| The resolved setting | The skill |
 | --- | --- |
-| name a skill for the hook | reads that skill and follows it for that step |
-| name nothing | follows the hook's "Without one" outcome |
-| name a skill that cannot be read | stops with `NEEDS_CONTEXT`, naming it |
+| names a skill for the hook | reads that skill and follows it for that step |
+| names nothing | follows the hook's "Without one" outcome |
+| names a skill that cannot be read | stops with `NEEDS_CONTEXT`, naming it |
 
-There is no discovery by folder or by name pattern: a companion counts only when the agent instructions name it. That works the same in a repo, a shared library or a hosted skill platform with no folders, and lets two contexts fill one hook differently. A worked example: [analyze-skill-quality's reference](.agents/skills/meta/analyze-skill-quality/reference.md#a-worked-example).
+There is no discovery by folder or by name pattern: a companion counts only when a setting names it. That works the same in a repo, a shared library or a hosted skill platform with no folders, and lets two contexts fill one hook differently. A worked example: [analyze-skill-quality's reference](.agents/skills/meta/analyze-skill-quality/reference.md#a-worked-example).
+
+## Workspace settings
+
+A setting is a value, or a hook's companion, that the workspace running a skill supplies to it. Facts about this repo are not workspace settings; they stay in `AGENTS.md` ([Repo facts](#repo-facts)). Wherever a skill says it reads a setting from "the agent instructions", it means a setting resolved as this section says.
+
+### Where settings are kept
+
+In a place every agent in the workspace reads. With one agent, that can be its agent instructions. With more than one, keep them in one shared settings record the harness gives every agent in the workspace, so that agents' copies cannot drift apart. A setting written only into one agent's own instructions binds that agent alone.
+
+### What a setting declares
+
+| Field | What it holds | When left out |
+| --- | --- | --- |
+| Name | the hook or value it sets | required |
+| Value | for a hook, the companion skill's name; otherwise the value | required |
+| Applies to | the whole workspace, or one person, named by an identity a run can check (an account or mailbox address; a display name alone is not enough) | the whole workspace |
+| Strength | for a workspace setting: `rule`, which binds everyone it applies to and is never replaced by a narrower setting, or `default`, which a person's setting replaces | `default` |
+
+A plain `Setting | Value` row, the shape every settings table has used so far, is a workspace default. A person's setting is always the narrowest, so strength does not apply to it.
+
+A business rule the whole team works to (how subject lines are written, say) is a workspace `rule`. A preference that differs by person (which senders are personal, which project a task goes in) is a person's setting. Where a team has an agreed practice that a person may vary, it is a workspace `default`.
+
+### Resolving a setting
+
+1. **Work out whose work the run is doing**: the person whose mailbox, calendar, task list or document it acts on. That is not necessarily the agent's owner or the person in the conversation. If it cannot be told and a person's setting exists for this name: interactive, ask; unattended, stop with `NEEDS_CONTEXT`.
+2. **Keep only the settings that apply**: the workspace's, and that person's. A setting that applies to anyone else is ignored, even when it can be read.
+3. **Apply every workspace `rule` for the name.**
+4. **Then take the person's setting if there is one, otherwise the workspace `default`.** It applies alongside any rule. Where the two conflict, the rule wins; for a hook, read the rule's companion first.
+5. **If nothing applies**, follow the skill's outcome for a missing setting: for a hook, its "Without one" column.
+6. **If two settings at the same level disagree** (same name, scope and strength, different values), stop with `NEEDS_CONTEXT`, naming both. Never pick one.
 
 ## Who is watching
 
