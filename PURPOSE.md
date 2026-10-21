@@ -39,6 +39,7 @@ These are not traded against value. A change that breaks one is not a candidate.
 3. **Client allies propose.** What they send back is cleaned into an agnostic form first: which skill, which status, what kind of need.
 4. **A core skill changes only in the core.** In a client workspace, a local edit to a core skill is drift: it is reported, and never kept or carried up. In a maintainer's workspace, a local edit is a draft of a core change, and reaches the core only through rule 2.
 5. **Only a person can switch off a safety check.** A safety check is anything that makes a run stop instead of carrying on: refusing to write over a newer copy, proving the repo is current before deleting a local one, stopping when a needed fact is missing. An agent may not remove one, loosen it, or route around it, even when it is in the way.
+6. **Nothing waits on a person remembering.** Every state the network can reach (a proposal awaiting a verdict, an accepted change awaiting a build, a report awaiting a read, a run that stopped) has an owner and a trigger that fires without anyone opening a thread. A person may be the one who decides; they are never the one who has to start. A safety check that stops a run still hands the stop to an owner. A gap in this outranks every other change: an agent that finds one fixes it or hands it to something that will act, and does not report its run finished until then.
 
 ## Roles
 
