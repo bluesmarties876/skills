@@ -6,6 +6,8 @@ Not loaded by default. Everything the procedure needs is in [SKILL.md](SKILL.md)
 
 A new method adds value once, to the jobs it covers. A change to how the network senses, routes or guards adds value to every method that passes through it afterwards, in every workspace. Those are different growth curves, so the score multiplies **reach**, **inheritance** and **self-improvement** rather than adding them: a change that is broad but inherits nothing, or deep but reaches one workspace, should not outrank one that is both.
 
+**Unlocks** is a fourth multiplier because the other three score a change in isolation, and a network has dependencies. Inheritance is capped at 3, so it cannot see that a missing foundation blocks several approved decisions at once, or that a built change's signal can never arrive. Without this term the procedure kept recommending polish on what exists over the prerequisite that lets accepted work land, and the agent was tempted to override the score by judgement. Counting only dependencies named in `decisions.md` keeps the term checkable rather than a second guess.
+
 Cost is divided out because the network's scarcest resource is the maintainer's attention, and its worst failure is a bad commit reaching every workspace at once. A cheap change that needs one yes beats a slightly better one that needs a design review.
 
 "Prefer one level up" is the tie-break because it is the compounding move: publishing one good skill helps once; the pipeline that publishes any good skill helps for every skill written afterwards.
@@ -16,10 +18,12 @@ Cost is divided out because the network's scarcest resource is the maintainer's 
 
 Candidates on the same day: improve a Toggl client's pagination, or build the pipeline that brings workspace skills into the core.
 
-| | Reach | Inheritance | Self-improvement | Work | Blast | Attention |
-| --- | --- | --- | --- | --- | --- | --- |
-| Toggl pagination | 1 | 1 | 1 | 1 | 1 | 1 |
-| Publish pipeline | 3 | 3 | 2 | 2 | 2 | 1 |
+| | Reach | Inheritance | Self-improvement | Unlocks | Work | Blast | Attention |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Toggl pagination | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| Publish pipeline | 3 | 3 | 2 | 1 | 2 | 2 | 1 |
+
+A 1 on work, blast radius or attention is the cheap end. Nothing in `decisions.md` waited on either candidate here, so both score 1 on unlocks, and the pipeline still ranks first: 4.5 against 1.
 
 The pagination fix is the better afternoon of work for a user of that client. It is not what this skill exists to find.
 

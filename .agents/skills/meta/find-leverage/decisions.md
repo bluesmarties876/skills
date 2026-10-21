@@ -133,3 +133,13 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Proposed by:** the maintainer
 - **Verdict reason:** (awaiting a person)
 - **Signal awaited:** none until built.
+
+### D-11: A client ally's scheduled sync pass
+
+- **Date:** 2026-10-21
+- **Status:** pending
+- **Broken flow:** a client ally has no scheduled skill that keeps her workspace in step with the core, so nothing produces the commit `report-to-core` needs and the core receives no reports.
+- **Change:** one skill each client ally runs on a schedule. It records the core commit the workspace matches, adopts new core skills as pointers, reports a local edit and restores the skill to its pointer (moving business context into a companion first), and makes sure the reporting schedules exist.
+- **Proposed by:** find-leverage
+- **Verdict reason:** (awaiting a person)
+- **Signal awaited:** none until built.
