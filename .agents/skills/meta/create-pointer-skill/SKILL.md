@@ -69,7 +69,7 @@ SearchKnowledge("<skill name>")
 ```
 
 If nothing comes back, no local skill exists and you are clear to create the pointer —
-skip to Step 3.
+continue to Step 2.
 
 If something comes back, you must find out **what kind** of skill it is, because the four
 possible answers lead to four different outcomes. Read its body:
@@ -92,9 +92,13 @@ create a pointer; `1` means stop and hand off.
 | `kind` | What it means | What to do |
 |---|---|---|
 | `absent` | nothing local, or an empty body | create the pointer (Step 3) |
-| `thin_pointer` | the canonical one-line pointer already | **stop.** Say it already exists, name the resolver it points at, change nothing |
+| `thin_pointer` | the canonical one-line pointer already | **stop without changing it.** Name the resolver and report any runtime-registration gap under the contract |
 | `verbose_pointer` | an older pointer shape: announces itself, hands over raw URLs | **stop and report.** Do not silently rewrite it — see the note below |
 | `full_skill` | a skill with real content of its own | **hand off** to `collapse-skill-to-pointer` — see below |
+
+An existing thin pointer is not necessarily runnable. Inspect its repo requirements and
+`availableScripts` under the runtime contract; report a missing anchor and ask before
+repairing it. Do not classify by script count: an anchored pointer is still a pointer.
 
 **`full_skill` — hand off, do not collapse it yourself.** Collapsing a skill that has
 content is destructive: it wipes a body and removes scripts, and it is only safe once the
@@ -146,15 +150,30 @@ hand-rolled GitHub calls.
 
 ## Step 3 — Read the repo skill and plan the pointer
 
-Fetch the repo skill's `SKILL.md` to disk — the resolver's `--read` flag prints it — and
-have the script assemble the exact payload:
+Fetch the repo skill's `SKILL.md` to disk — the resolver's `--read` flag prints it.
+Before planning, inspect the complete repo folder and credential-wrapper use under the
+[Hyperagent runtime contract](hyperagent-runtime.md). Unknown is not instruction-only:
+stop if the folder or credential requirements could not be inspected.
+
+Choose exactly one runtime option set for the planner below:
+
+| The inspection finds | Runtime options |
+| --- | --- |
+| Scripts or own credential-wrapper use | `--runtime required --anchor-out /tmp/new-pointer/credential_anchor.py` |
+| Instructions only; neither requirement | `--runtime none` |
+
+Create the scratch directory first for the required case. Substitute the chosen options
+for RUNTIME_OPTIONS; it is a placeholder, not a literal argument:
 
 ```
 python3 scripts/create_pointer_skill.py plan \
     --repo {owner}/{repo} \
     --name {skill name} \
-    --repo-skill-md /tmp/repo_skill.md
+    --repo-skill-md /tmp/repo_skill.md RUNTIME_OPTIONS
 ```
+
+The required case writes a new no-op anchor and emits its `scripts` registration;
+the instruction-only case emits an empty array and writes no anchor.
 
 It prints the one-line body, the derived resolver, the repo's own `description`, and any
 warnings worth reading. `--json` for the structured form.
@@ -197,11 +216,20 @@ this family of repos follows. Hyperagent needs more than that for the pointer to
 `whenToUse` is the field most often skimped and the one that decides whether the skill is
 ever used. Read the repo body for it; do not write "see the repo".
 
+### Runtime registration and credential slots
+
+Pass the planner's `scripts` array into `CreateSkill` when runtime is required; writing
+the anchor to disk alone does not register it in Hyperagent. Keep the body exactly one
+line. Declare the credential slots documented by the repo skill using `credentialSchema`,
+never their values. A skill borrowing another API skill's credentials does not duplicate
+those slots; ensure the named credential-owning skill has its own registered script.
+The anchor contains no implementation and is not the script to execute for real work.
+
 ### Saving
 
 Prefer an immediate save:
 
-For the repo `acme/tools` and the skill `tidy-notes`, that is:
+For an instruction-only skill (`--runtime none`), the shape is:
 
 ```
 CreateSkill(
@@ -231,7 +259,10 @@ own `mode`: an auto-saved result is created; anything else is a draft awaiting t
 - The name matches the repo's folder leaf name exactly.
 - `description` and `whenToUse` are present, and `whenToUse` names the trigger.
 - The `pointer` tag is present.
-- The skill declares no scripts of its own.
+- Runtime-required pointers declare `credential_anchor.py`, not the real repo scripts;
+  instruction-only pointers declare none. Verify against the runtime contract.
+- Verify persisted state only after a successful save. A draft payload is not installed;
+  report runtime registration as pending until the person saves it.
 
 ## Sample output
 
@@ -278,11 +309,13 @@ Exit `1` — stop, do not create anything.
 
 ```
 $ python3 create_pointer_skill.py plan --repo acme/tools --name tidy-notes \
-      --repo-skill-md /tmp/repo_skill.md
+      --repo-skill-md /tmp/repo_skill.md --runtime none
 name:         tidy-notes
 resolver:     resolve-repo-skill-acme/tools
 documentation: Execute `resolve-repo-skill-acme/tools`
 repo:         acme/tools
+runtime:      none
+scripts:      []
 description:  Sorts notes into dated files.
 
 warnings:
@@ -304,7 +337,12 @@ warnings:
 |---|---|---|
 | `classify needs --body-file or --stdin` | No body was passed. | Write the skill's `skillMd` to a file and pass it, or pipe it in. |
 | `cannot read <path>: <reason>` | The file is missing or unreadable. | Check the path; `FetchSkillScripts` or the resolver's `--read` puts the file there. |
-| `give at least one target…` (exit 2) | A subcommand was run with no arguments. | Pass the flags above; `--help` lists them. |
+| `--runtime` required / invalid choice (exit 2) | The runtime decision was omitted or invalid. | Inspect the folder and credential use, then choose required or none. |
+| `cannot plan pointer: runtime=required needs --anchor-out` | No local registration file was requested. | Give a new path ending credential_anchor.py in an existing directory. |
+| `cannot plan pointer: --anchor-out requires --runtime required` | An instruction-only plan was given an anchor path. | Omit --anchor-out, or re-check the runtime decision. |
+| `cannot plan pointer: --anchor-out filename must be credential_anchor.py` | Wrong output filename. | Use credential_anchor.py. |
+| `cannot plan pointer: … File exists …` | Exclusive creation protected an existing file. | Inspect it and choose a fresh scratch directory; do not overwrite it. |
+| `cannot plan pointer: … No such file or directory …` | The anchor's parent directory is missing. | Create a new scratch directory first, then retry. |
 
 ## Failure modes worth recognising
 
@@ -315,7 +353,7 @@ warnings:
 | Resolver refuses on a truncated tree | GitHub's listing was incomplete, so "not found" would be a lie. Stop. |
 | Resolver 401/403 | The repo credential is bad or rate-limited. Not a missing skill. |
 | Derived resolver skill is not installed | Stop before writing a body that names nothing. |
-| Local skill is already a thin pointer | Stop. Nothing to do. |
+| Local skill is already a thin pointer | Leave it unchanged; report any runtime-registration gap rather than assuming it is usable. |
 | Local skill is a verbose pointer | Report it; do not overwrite. |
 | Local skill is a full skill | Hand off to `collapse-skill-to-pointer`; do not collapse it here. |
 | `collapse-skill-to-pointer` unavailable | Stop and ask. Do not re-implement its safety check. |
@@ -333,22 +371,25 @@ than the one it was given.
 
 ## The script
 
-`create_pointer_skill.py` is the only script this skill ships, and it does the two mechanical
-jobs. It is **pure**: no network, no credentials, no Hyperagent API, so it is safe to run at
-any point in the procedure.
+`create_pointer_skill.py` performs the two mechanical jobs without network, credentials
+or Hyperagent API calls. `classify` reads only; `plan --runtime required` additionally
+writes a new no-op anchor file using exclusive creation, refusing to overwrite a file.
 
 ```
 python3 create_pointer_skill.py classify --body-file LOCAL.md [--stdin] [--json]
-python3 create_pointer_skill.py plan --repo OWNER/REPO --name SKILL --repo-skill-md REPO_SKILL.md [--json]
+python3 create_pointer_skill.py plan --repo OWNER/REPO --name SKILL --repo-skill-md REPO_SKILL.md --runtime required --anchor-out /tmp/credential_anchor.py [--json]
 python3 create_pointer_skill.py --selftest
 ```
 
 - **`classify`** — `absent` / `thin_pointer` / `verbose_pointer` / `full_skill`, with the
   evidence behind the call. Exit `0` when the caller may proceed to create a pointer, `1`
   when it must stop.
-- **`plan`** — the one-line body, the derived resolver, the repo's description, and the
-  warnings. Exit `0`, or `2` if the repo SKILL.md cannot be read.
+- **`plan`** — the one-line body, resolver, description, runtime decision, `scripts`
+  registration, and warnings. `--runtime` is mandatory. With `required`, `--anchor-out`
+  must name a new credential_anchor.py file in an existing directory; with `none`, omit it.
+  Exit `0`, or `2` on unreadable input, invalid options, or an existing output file.
 - **`--selftest`** — proves every classifier branch fires and stays silent on a real skill.
+  Includes required/none registration and CLI collision/error probes.
   Run it once in any new environment; it ends `PASS: 0 failing`. Anything else means the
   classifier cannot be trusted, so stop.
 

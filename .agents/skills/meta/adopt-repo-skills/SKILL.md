@@ -111,8 +111,7 @@ copy of `github-api` is a pointer and holds only a credential anchor, so
 command under `RunWithCredentials(skillName="github-api", ...)` so the token
 is injected. This skill's own script sits beside this `SKILL.md`, at
 `scripts/repo_skill_inventory.py`: read it out of the repo folder the resolver
-named, because the local copy of this skill is a pointer and carries no scripts
-of its own. Run every `repo_skill_inventory.py` command below from the directory
+named, because the local copy of this skill is a pointer and holds at most a no-op runtime anchor, not the implementation. Run every `repo_skill_inventory.py` command below from the directory
 you put it in. `{ref}` defaults to `main`; on a repo whose default branch differs,
 resolve it first (`GET /repos/{owner}/{repo}` → `default_branch`) rather than
 assuming, and record which ref you used.
@@ -157,7 +156,7 @@ SearchKnowledge("<name>")
   ```
   # create_pointer_skill.py sits beside create-pointer-skill's SKILL.md in the repo,
   # at meta/create-pointer-skill/scripts/. Fetch it from the repo folder the resolver
-  # named: the local copy of that skill is a pointer, so FetchSkillScripts returns none.
+  # named: the local copy of that skill is a pointer, so FetchSkillScripts returns at most its runtime anchor.
   python3 create_pointer_skill.py classify --body-file /tmp/local_body.md
   ```
 
@@ -186,7 +185,7 @@ One row per repo skill, each with an outcome:
 | Outcome | Local state | What happens |
 | --- | --- | --- |
 | `CREATE` | nothing local | create the pointer — hand to `create-pointer-skill` |
-| `EXISTS` | a pointer at this repo | nothing to do; already adopted |
+| `EXISTS` | a pointer at this repo | body is adopted; inspect runtime registration before calling it usable |
 | `CONFLICT` | a pointer at a **different** repo, or naming no resolver | stop on this one and report — see below |
 | `REPORT` | a verbose pointer | report it; do not overwrite it |
 | `HANDOFF` | a full local skill with its own content | hand to `collapse-skill-to-pointer` |
@@ -197,6 +196,11 @@ thin pointer and stops — correct in isolation, but here it would pass silently
 over a name collision: a local pointer that already means a *different* skill in
 a *different* repo. Re-pointing it is a decision, not a step, so it is reported
 and left alone.
+
+For `EXISTS` rows, compare the complete repo folder and credential use with the
+[Hyperagent runtime contract](../create-pointer-skill/hyperagent-runtime.md), then inspect
+`availableScripts`. Report a missing anchor as a runtime gap, not as a healthy adoption.
+This additive sweep does not repair existing pointers without the person asking.
 
 ### 4. Apply, one skill at a time
 
@@ -235,7 +239,8 @@ returns the folder the repo holds; one that comes back "no such skill" is a dead
 end, and the creation behind it was wrong. Run the whole set this way rather than
 trusting the creation results.
 
-Then read each created pointer back and check three fields:
+For a saved creation, read the pointer back and check these fields. For a draft, check
+the proposed payload and report saved-state verification pending:
 
 ```
 GetKnowledgeDetails(type="skill", id="<the id the creation returned>")
@@ -244,6 +249,9 @@ GetKnowledgeDetails(type="skill", id="<the id the creation returned>")
 - `skillMd` is the single `Execute` line naming the derived resolver — the repo
   substituted, with no `<...>` placeholder and no preamble left in it.
 - `tags` contains `pointer`.
+- Runtime-required pointers have a registered no-op `credential_anchor.py`; the real
+  scripts remain in the repo. Instruction-only pointers need no anchor.
+- Required credential slots are present on the skill that owns them, without copied values.
 - `name` is the repo's folder leaf name exactly, because that is what the
   resolver resolves by.
 

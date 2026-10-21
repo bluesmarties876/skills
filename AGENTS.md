@@ -69,6 +69,14 @@ thing a skill may carry, and its value lives in the credential store, never in a
 The repo being private does not relax this. [PURPOSE.md](PURPOSE.md) rule 1 is why: the
 core is shared by every business.
 
+## Hyperagent pointer runtime
+
+A one-line pointer can still need a registered local script. For skills that carry
+scripts or use their own credential wrapper, keep a no-op credential_anchor.py registered
+on the Hyperagent pointer. The implementation stays in this repo. Creation, collapse,
+adoption and updates use the [runtime contract](.agents/skills/meta/create-pointer-skill/hyperagent-runtime.md).
+Never treat an anchor as the repo implementation or as a credential store.
+
 ## The environment
 
 - **Python 3.9 is the floor**, and it is what the sandbox runs. Nothing here may use 3.10+

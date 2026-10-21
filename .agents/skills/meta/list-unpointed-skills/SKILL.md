@@ -169,7 +169,7 @@ For each name:
    That script ships with `create-pointer-skill`, beside its `SKILL.md` in the
    repo (`meta/create-pointer-skill/scripts/`); fetch it from the repo folder the
    resolver named, since the local copy of that skill is a pointer and
-   `FetchSkillScripts` returns no scripts for it. It is the authority on the
+   `FetchSkillScripts` returns at most its runtime anchor, not the implementation. It is the authority on the
    thin-versus-verbose distinction, and re-deriving that judgement here is how a
    second, drifting copy gets made. It exits `0` or `1`; both are normal, so read
    its JSON regardless of the exit code.
