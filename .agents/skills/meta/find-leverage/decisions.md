@@ -143,3 +143,13 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Proposed by:** find-leverage
 - **Verdict reason:** (awaiting a person)
 - **Signal awaited:** none until built.
+
+### D-12: The report collector sees the skills
+
+- **Date:** 2026-10-22
+- **Status:** accepted
+- **Broken flow:** `collect-ally-reports` and `report-to-core`, given the core repo, find no skills, because `core_skill_names` skips every folder whose name starts with a dot and every skill lives under `.agents/skills`. The collector exits before it reads a report.
+- **Change:** give `core_skill_names` the same hidden-folder skip list `network_model` already uses, so it descends into `.agents`, and add a selftest fixture with a skill under `.agents/skills`.
+- **Proposed by:** find-leverage
+- **Verdict reason:** Reports cannot be read until the collector sees the skills.
+- **Signal awaited:** none until built.
