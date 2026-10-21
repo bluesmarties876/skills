@@ -201,6 +201,10 @@ is also fragile reports `CLOSE_CALL`, and `flips` still lists the weight changes
 - **Skipping step 2.** Buying a product for the one thing that makes the business different,
   or building a commodity nobody will thank you for.
 - **Recommending on `INCOMPLETE`.** A missing must is a question, not a pass.
+- **Researching the business before asking.** Looking up the domain, the site, or the
+  tools already in use, then building the decision from that. Or putting a product they
+  use for a different job on the longlist because it turned up in that lookup. The person
+  holds the need. A lookup answers a fact they said they do not know.
 
 ## Sources
 
