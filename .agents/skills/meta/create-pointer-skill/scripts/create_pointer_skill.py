@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Mechanical half of the create-pointer-skill skill.
 
-Two pure jobs, both string work. No network, no credentials, no Hyperagent API,
+Two jobs. No network, no credentials, no Hyperagent API,
 so it is safe to run at any point in the procedure.
 
   classify   What kind of local skill is this? Decides whether the caller should
@@ -9,7 +9,7 @@ so it is safe to run at any point in the procedure.
 
   plan       Given the repo and the skill name, print the exact pointer payload:
              the one-line body, the derived resolver name, and the metadata
-             parsed from the repo's SKILL.md.
+             parsed from the repo's SKILL.md; writes a new no-op anchor file when needed.
 
 Runtime floor: Python 3.9, standard library only. Imports nothing from beside it,
 so a copy of this one file runs anywhere.
@@ -19,6 +19,19 @@ import argparse
 import json
 import re
 import sys
+from pathlib import Path
+
+ANCHOR_SOURCE = '''#!/usr/bin/env python3
+"""Hyperagent runtime anchor; not the implementation or a credential store.
+
+Register this file on the local pointer skill so FetchSkillScripts and
+RunWithCredentials can prepare it. Fetch and run the real scripts from the
+resolved repo folder. This file reads no credentials and makes no requests.
+"""
+
+if __name__ == "__main__":
+    print("Runtime anchor only. Fetch and run the implementation from the resolved repo skill.")
+'''
 
 # --------------------------------------------------------------------------
 # What a pointer looks like
@@ -157,9 +170,16 @@ def parse_frontmatter(text):
     return fields, warnings
 
 
-def build_plan(repo, name, repo_skill_md):
+def build_plan(repo, name, repo_skill_md, runtime=None, anchor_out=None):
     """Assemble the pointer payload. Returns (payload, warnings)."""
     warnings = []
+
+    if runtime not in ("required", "none"):
+        raise ValueError("choose runtime=required or none after inspecting the repo folder and credential use")
+    if runtime == "required" and not anchor_out:
+        raise ValueError("runtime=required needs --anchor-out for the local registration file")
+    if runtime == "none" and anchor_out:
+        raise ValueError("--anchor-out requires --runtime required")
 
     if repo.count("/") != 1 or not all(repo.split("/")):
         warnings.append(
@@ -203,6 +223,10 @@ def build_plan(repo, name, repo_skill_md):
         "repo": repo,
         "repo_declared_name": declared,
         "description_from_repo": description,
+        "runtime": runtime,
+        "scripts": ([{"filePath": str(Path(anchor_out).absolute()),
+                      "description": "Hyperagent runtime anchor only; implementation lives in the repo."}]
+                    if runtime == "required" else []),
         "tags_seed": ["pointer"],
         "tags_note": (
             "Seed only. Add the domain tags the repo SKILL.md body implies, or the "
@@ -223,6 +247,10 @@ def build_plan(repo, name, repo_skill_md):
 
 
 def selftest():
+    # Older plan fixtures are documentation-only skills.
+    original_build_plan = build_plan
+    def plan_without_runtime(repo, name, body):
+        return original_build_plan(repo, name, body, runtime="none")
     checks = []
 
     def check(cond, label):
@@ -283,7 +311,7 @@ def selftest():
     check(fields.get("description") == "Quoted value.", "quoted frontmatter value unquoted")
 
     # plan
-    payload, w = build_plan(
+    payload, w = plan_without_runtime(
         "acme/tools", "tidy-notes",
         "---\nname: tidy-notes\ndescription: Sorts notes into dated files.\n---\n\n# Tidy\n",
     )
@@ -295,23 +323,72 @@ def selftest():
           "plan carries the repo description")
     check(payload["tags_seed"] == ["pointer"], "plan seeds the pointer tag")
 
-    payload, w = build_plan(
+    payload, w = plan_without_runtime(
         "acme/tools", "tidy-notes", "---\nname: tidy-notes\ndescription: x\n---\n"
     )
     check(any("matches the folder name" in x for x in w),
           "plan confirms a frontmatter name that matches the folder")
 
-    payload, w = build_plan(
+    payload, w = plan_without_runtime(
         "acme/tools", "analyze-skill-quality", "---\nname: analyse-skill-quality\ndescription: x\n---\n"
     )
     check(any("folder leaf name is" in x for x in w),
           "plan flags a frontmatter name that disagrees with the folder")
 
-    payload, w = build_plan("notarepo", "x", "# No frontmatter\n")
+    payload, w = plan_without_runtime("notarepo", "x", "# No frontmatter\n")
     check(any("owner/repo form" in x for x in w), "plan rejects a malformed repo")
     check(any("no YAML frontmatter" in x for x in w), "plan warns on missing frontmatter")
     check(any("no description" in x for x in w), "plan warns on a missing description")
 
+    payload, _ = build_plan("acme/tools", "x", "# x", "required", "/tmp/credential_anchor.py")
+    check(payload["scripts"][0]["filePath"] == "/tmp/credential_anchor.py", "runtime plan registers anchor")
+    check(payload["documentation"] == "Execute `resolve-repo-skill-acme/tools`", "anchor leaves body one line")
+    payload, _ = build_plan("acme/tools", "x", "# x", "none")
+    check(payload["scripts"] == [], "documentation-only plan has no anchor")
+    for runtime, anchor in ((None, None), ("required", None), ("none", "/tmp/a.py")):
+        try:
+            build_plan("acme/tools", "x", "# x", runtime, anchor)
+        except ValueError:
+            check(True, "invalid runtime inputs refused: %s" % runtime)
+        else:
+            check(False, "invalid runtime inputs refused: %s" % runtime)
+    compile(ANCHOR_SOURCE, "credential_anchor.py", "exec")
+    check("import os" not in ANCHOR_SOURCE, "anchor does not read environment")
+    import contextlib
+    import io
+    import tempfile
+    import subprocess
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        md = root / "SKILL.md"
+        md.write_text("---\nname: tidy\ndescription: Sort notes.\n---\n# Tidy\n", encoding="utf-8")
+        anchor = root / "credential_anchor.py"
+        base = ["plan", "--repo", "acme/tools", "--name", "tidy",
+                "--repo-skill-md", str(md), "--json"]
+        def invoke(options):
+            out, err = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = main(base + options)
+            return code, out.getvalue(), err.getvalue()
+        code, out, _ = invoke(["--runtime", "none"])
+        check(code == 0 and json.loads(out)["payload"]["scripts"] == [] and not anchor.exists(),
+              "CLI instruction-only plan creates no anchor")
+        code, out, _ = invoke(["--runtime", "required", "--anchor-out", str(anchor)])
+        check(code == 0 and json.loads(out)["payload"]["scripts"][0]["filePath"] == str(anchor),
+              "CLI runtime plan writes registered path")
+        before = anchor.read_bytes()
+        check(before == ANCHOR_SOURCE.encode("utf-8"), "CLI anchor matches no-op source")
+        output = subprocess.check_output([sys.executable, str(anchor)], text=True)
+        check("Runtime anchor only" in output, "generated anchor executes as a no-op")
+        code, _, _ = invoke(["--runtime", "required", "--anchor-out", str(anchor)])
+        check(code == 2 and anchor.read_bytes() == before, "CLI refuses overwrite without changing bytes")
+        for options in (["--runtime", "required"],
+                        ["--runtime", "none", "--anchor-out", str(anchor)],
+                        ["--runtime", "required", "--anchor-out", str(root / "real.py")],
+                        ["--runtime", "required", "--anchor-out", str(root / "missing" / "credential_anchor.py")]):
+            code, _, _ = invoke(options)
+            check(code == 2, "CLI invalid anchor options refused: %s" % options)
+        check(not (root / "real.py").exists(), "wrong filename leaves no output")
     failed = [label for ok, label in checks if not ok]
     for ok, label in checks:
         print(("  ok   " if ok else "  FAIL ") + label)
@@ -346,6 +423,9 @@ def main(argv=None):
     b.add_argument("--repo-skill-md", required=True,
                    help="the repo copy's SKILL.md, fetched to disk")
     b.add_argument("--json", action="store_true", help="structured output")
+    b.add_argument("--runtime", required=True, choices=("required", "none"),
+                   help="required for repo scripts or credential-wrapper use; none for instruction-only skills")
+    b.add_argument("--anchor-out", help="new file to write and register as credential_anchor.py")
 
     args = p.parse_args(argv)
 
@@ -382,7 +462,18 @@ def main(argv=None):
         except OSError as exc:
             print("cannot read %s: %s" % (args.repo_skill_md, exc), file=sys.stderr)
             return 2
-        payload, warnings = build_plan(args.repo, args.name, repo_md)
+        try:
+            payload, warnings = build_plan(args.repo, args.name, repo_md, args.runtime, args.anchor_out)
+            if args.anchor_out:
+                target = Path(args.anchor_out)
+                if target.name != "credential_anchor.py":
+                    raise ValueError("--anchor-out filename must be credential_anchor.py")
+                # Exclusive creation: never overwrite a real script or an earlier artifact.
+                with target.open("x", encoding="utf-8") as fh:
+                    fh.write(ANCHOR_SOURCE)
+        except (OSError, ValueError) as exc:
+            print("cannot plan pointer: %s" % exc, file=sys.stderr)
+            return 2
         if args.json:
             print(json.dumps({"payload": payload, "warnings": warnings}, indent=2))
         else:
@@ -390,6 +481,8 @@ def main(argv=None):
             print("resolver:     %s" % payload["resolver"])
             print("documentation: %s" % payload["documentation"])
             print("repo:         %s" % payload["repo"])
+            print("runtime:      %s" % payload["runtime"])
+            print("scripts:      %s" % json.dumps(payload["scripts"]))
             if payload["description_from_repo"]:
                 print("description:  %s" % payload["description_from_repo"])
             print()

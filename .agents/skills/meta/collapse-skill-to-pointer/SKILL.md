@@ -1,6 +1,6 @@
 ---
 name: collapse-skill-to-pointer
-description: Collapse a Hyperagent skill whose real home is a git repo into a one-line pointer at the repo version — proving the skill exists in the repo AND that the repo copy is current first, so nothing local is lost or clobbered, then removing the local scripts, replacing the body with a single Execute line, and adding a pointer tag. Keeps the credential slots so the repo version's scripts still have secrets to run with. Needs no credentials of its own.
+description: Collapse a Hyperagent skill whose real home is a git repo into a one-line pointer at the repo version — proving the skill exists in the repo AND that the repo copy is current first, so nothing local is lost or clobbered, then replacing local implementation scripts with a runtime anchor when needed, replacing the body with a single Execute line, and adding a pointer tag. Keeps the credential slots so the repo version's scripts still have secrets to run with. Needs no credentials of its own.
 ---
 
 # Collapse skill to pointer
@@ -9,8 +9,9 @@ Collapse a Hyperagent skill whose real home is a git repo down to a one-line poi
 the repo version.
 
 The repo holds the method; the local skill becomes a signpost. Afterwards the local skill
-carries no scripts and no body of its own — just one line naming the repo skill to go and
-read. One copy of the truth, and a change to the method lands everywhere the moment it is
+carries no implementation scripts and no method body of its own — just one line naming
+the resolver, plus a registered no-op runtime anchor when scripts or credential-wrapper
+use require it. See the [Hyperagent runtime contract](../create-pointer-skill/hyperagent-runtime.md). One copy of the truth, and a change to the method lands everywhere the moment it is
 committed, with no copies to re-sync.
 
 That is a deliberate amputation, so it is a conversation with **two** checks in front of
@@ -58,7 +59,9 @@ Read the local skill's body. Reading it changes nothing.
 
 A body that is **already** the one-line pointer — a single `Execute` line naming a
 `resolve-repo-skill-<owner>/<repo>`, and nothing else — means there is nothing to collapse.
-Report it, name the resolver it points at, and change nothing. Carrying on is worse than
+Report it, name the resolver it points at, and change nothing. Check for a runtime gap
+under the runtime contract and report it for repair, without collapsing it again.
+Carrying on is worse than
 useless: a pointer body is a subset of the repo method, so the checker reads it as
 `local_behind` and reports SAFE TO COLLAPSE.
 
@@ -179,23 +182,24 @@ this skill's body, and its scripts — and keeps its name and its credential slo
 
 | What the reference depends on | After the collapse |
 | --- | --- |
-| this skill's **scripts** | broken — nothing local answers |
+| this skill's **implementation scripts** | broken — only a no-op anchor may answer locally |
 | this skill's **body** | broken — a reader gets a pointer to this skill, not the method |
-| this skill's **credential slots**, or its **name** | still works |
+| this skill's **credential slots**, or its **name** | name survives; credential preparation also needs a registered script |
 
 Both shapes seen in practice depend on the scripts:
 
 - **a harness call that fetches this skill's own scripts by name** —
   `FetchSkillScripts("<this skill's name>")`. It reads the local copy's declared scripts, and
-  a pointer declares none, so it returns nothing. Look for this one hardest: it is correct
+  a pointer returns at most its runtime anchor, never the implementation. Look for this one hardest: it is correct
   and load-bearing right up until the collapse, and nothing else in the chain flags it.
 - **a path into the local skill's folder** —
   `python3 /agent/workspace/skills/<this skill's name>/<script>.py`. Real while the local
   copy carries the script, dead the moment it does not.
 
 A call that names this skill but reads only its **credential slots** —
-`RunWithCredentials(skillName="<this skill's name>", ...)` — is not in the class, because the
-slots survive. Naming a skill is not the test; depending on what the collapse removes is.
+`RunWithCredentials(skillName="<this skill's name>", ...)` — is not in the class, provided a local script is registered on the credential-owning skill. Slots alone do
+not suffice: without a registered script Hyperagent can refuse the call before running
+the repo command. The anchor preserves that preparation path, not the implementation. Naming a skill is not the test; depending on what the collapse removes is.
 
 Report every reference you find, say which shape it is, and say what it resolves to
 afterwards. The fix is a change to the repo body, and this skill does not make it: hand it to
@@ -235,7 +239,13 @@ That is the whole body. Not a preamble, not a note, not a "this skill has moved"
 explanation. The next agent reading it needs exactly one instruction, and anything else you
 add is a second copy of the truth drifting out of date.
 
-## Step 7 — Strip the scripts
+## Step 7 — Replace implementation scripts with runtime registration
+
+Inspect the complete repo folder and credential use against the runtime contract. When
+runtime is required, generate a fresh `credential_anchor.py` using `create-pointer-skill`
+planner with `--runtime required --anchor-out <new scratch path>/credential_anchor.py`.
+Pass its `scripts` array in the same update that removes the real scripts. Do not strip
+first and add the anchor later: that leaves an unusable pointer in between.
 
 The block below is the shape only, not a command: every `<...>` is a value you supply,
 and it is not copyable as written.
@@ -244,7 +254,8 @@ and it is not copyable as written.
 UpdateSkillAndScripts(
   skillId = "<target skill>",
   documentation = "Execute `resolve-repo-skill-{owner}/{repo}`",
-  removeScripts = ["<every script filename the skill declares>"],
+  removeScripts = ["<declared implementation filenames, excluding credential_anchor.py>"],
+  scripts = [<planner anchor registration when runtime is required; otherwise none>],
   tags = [<existing tags...>, "pointer"],
 )
 ```
@@ -256,9 +267,14 @@ skill had. Read the existing tags in Step 5 and pass them back with `pointer` ad
 
 **`documentation` is a full replacement.** The one line is the entire new body.
 
-**`removeScripts` takes filenames**, and it is per-file. Pass every filename the skill
-declares — the list from `GetKnowledgeDetails`, not a guess from the folder. Scripts you do
-not name stay where they are.
+**`removeScripts` takes filenames**, and it is per-file. List the declared implementation
+filenames from `GetKnowledgeDetails`, excluding any anchor being retained or upserted;
+do not guess from the folder. Never place
+`credential_anchor.py` in both `scripts` and `removeScripts`. If that name already exists,
+inspect its bytes: do not overwrite an implementation or unknown content merely because
+of the filename. Stop and ask if it is not a proven no-op anchor. The sync proof in Step 2
+still compares every declared local script; an anchor name is not a drift-check exemption.
+Scripts you do not name stay where they are.
 
 Leave `description` and `whenToUse` alone. The skill keeps its identity; only its body and
 its scripts change.
@@ -295,14 +311,18 @@ Before reporting done, confirm:
 
 - Step 2's checker returned safe to collapse, on the current content
 - the body is exactly the one line, repo substituted, no placeholder left
-- the skill declares no scripts
+- a runtime-required pointer declares only its no-op credential_anchor.py; an
+  instruction-only pointer declares none, and the runtime decision was checked
 - the `pointer` tag is present and every previous tag survived
 - the credential schema matches the repo's slots
 - the resolver named in the body exists
 - the repo body was read for references to the local copy, and any found were reported and
   handed to `update-repo-skill`
 
-Then say what changed and hand over the card.
+These checks validate the proposed payload, not the saved state. Say the registration
+is pending and hand over the card. After the person saves it, read the skill back and
+fetch its registered anchor before attempting the repo command through its credential
+wrapper. Do not claim the draft has fixed runtime execution.
 
 ## The checker script
 

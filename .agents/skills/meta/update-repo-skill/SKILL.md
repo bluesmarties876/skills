@@ -52,7 +52,7 @@ depends on the local copy's state, and getting it wrong is how the two drift apa
 
 | The local copy | Where the change is made | Afterwards |
 | --- | --- | --- |
-| A pointer, whose stored body is a single line naming a resolver skill | the repo copy, which is now the home | nothing local to update |
+| A pointer, whose stored body is a single line naming a resolver skill | the repo copy, which is now the home | method stays in the repo; check local runtime registration when runtime requirements change |
 | A full copy of the skill | the local copy | the repo copy is written from it, and the two match again |
 | An empty or whitespace-only stored body | neither, because there is no copy to edit | `NEEDS_CONTEXT`, naming the skill |
 
@@ -265,8 +265,15 @@ confirms it, the repo write waits too. If the confirmation never comes, the run 
 `NEEDS_CONTEXT` naming the unconfirmed draft, the repo untouched and the draft standing —
 and this skill never confirms its own draft to get past the wait.
 
-Where the local copy is a pointer, nothing local changes and the edit is made straight into
-the repo copy fetched in step 2.
+Where the local copy is a pointer, edit the method in the repo copy fetched in step 2.
+If scripts or credential-wrapper use are added or removed, inspect its local registration
+against the [Hyperagent runtime contract](../create-pointer-skill/hyperagent-runtime.md).
+A newly runtime-required pointer needs a registered no-op credential_anchor.py, using a
+host update whose documentation remains the exact one-line pointer. Keep slots on their
+credential-owning skill. Report a required host draft separately from the repo write;
+a landed repo change does not prove the local runtime update has been saved. Do not
+remove an anchor or credential slots merely because one script was removed: check all
+remaining uses, and ask before deleting unknown local content.
 
 ### 6. Check the copy is fit for the core, and run the checks
 
@@ -417,8 +424,9 @@ already have: the body from `GetKnowledgeDetails` against the committed
 `FetchSkillScripts`, against the committed `scripts/`, matched by filename. Name the file
 that differs rather than reporting a boolean.
 
-Where the local copy is a pointer, there is nothing to compare, and the report says so
-rather than implying a check ran.
+Where the local copy is a pointer, there is no local method copy to compare. Do not
+compare its no-op anchor to the repo implementation or publish the anchor in its place.
+Verify local runtime registration separately, or explicitly report it pending/not checked.
 
 A mismatch does not change the run's status. Report it as the core's status — `LANDED` or
 `PROPOSED` — plus a drift note naming the file that differs, because the repo write did
