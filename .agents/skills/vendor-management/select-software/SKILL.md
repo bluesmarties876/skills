@@ -1,12 +1,13 @@
 ---
 name: select-software
-description: "Take a business need to a recommended software tool or vendor, with the evidence behind it. Decides build or buy first, then shortlists, eliminates on pass/fail musts, scores the survivors on wants weighted before scoring, tests the leader for adverse consequences, compares whole-of-life cost, and sets a pilot gate. Use for 'which tool should we use for X', 'compare these vendors', 'should we build or buy this', or 'help us choose a CRM, helpdesk, accounting or any other software'. Decides and reports only: it never contacts a vendor, signs up, or buys."
+description: "Take a business need to a recommended software tool or vendor, with the evidence behind it. Interviews the person first and does not research until that intake is answered. Then decides build or buy, shortlists, eliminates on pass/fail musts, scores the survivors on wants weighted before scoring, tests the leader for adverse consequences, compares whole-of-life cost, and sets a pilot gate. Use for 'which tool should we use for X', 'compare these vendors', 'should we build or buy this', or 'help us choose a CRM, helpdesk, accounting or any other software'. Decides and reports only: it never contacts a vendor, signs up, or buys."
 ---
 
 # Select software
 
 Take a business need to a recommended tool or vendor, or to "build it", with evidence a
-person can check. The method stacks established frameworks, each answering one question:
+person can check. Do the intake before any framework below. The method then stacks
+established frameworks, each answering one question:
 
 | Question | Framework |
 | --- | --- |
@@ -37,11 +38,12 @@ approval and their own tooling.
 
 | Input | Needed for | Without it |
 | --- | --- | --- |
-| The need: what job the tool does, for whom | everything | interactive: ask. Unattended: `NEEDS_CONTEXT`, naming it |
-| Hard constraints: budget ceiling, security, data location, systems it must connect to | step 4 | interactive: ask. Unattended: use the generic musts in reference.md and report `DONE_WITH_CONCERNS`, saying no constraints were given |
+| The job, for whom, and what is out of scope | everything | ask in the intake, then stop. Unattended: `NEEDS_CONTEXT`. Do not look it up |
+| Hard constraints: budget, data location, sign-in, systems it must connect to | step 4 | ask in the intake. A blank means that rule is not in play. Unattended: generic musts, `DONE_WITH_CONCERNS` |
 | Time horizon in years | step 8 | 3 years, and the report says it was assumed |
-| Who decides the weights | step 5 | the person in the conversation. Unattended: the weights stay as proposed and the report says nobody confirmed them |
-| Candidates the person already has in mind | step 3 | the longlist starts from research alone |
+| Which outcomes should win | step 5 | intake item 7. If they cannot answer, keep the proposed weights and say so |
+| Candidates to include, and candidates to leave off | step 3 | after the intake, the longlist comes from research alone |
+| Facts they do not know and want found | a lookup | do not look anything up |
 
 ## Safety
 
@@ -65,6 +67,34 @@ approval and their own tooling.
 
 How a hook is reached is in [Companion skills](../../../../CONVENTIONS.md#companion-skills).
 
+## Intake first
+
+When a person is in the conversation, the intake comes before any lookup, the ten
+steps, or the selftest. Ask them in one form. Each has two to four options, the recommended one first, and a
+way to type another answer. Wait for the reply. An earlier chat may be a hint inside
+an option. It is not an answer.
+
+1. **Job.** One sentence for the job the tool must do, and what is out of scope. A
+   product they use for a different job is not a candidate unless they put it on the list.
+2. **Users and volume.** Who uses it, how many, how often.
+3. **Already in place.** What they use for this job today, and what must keep working
+   beside it. Record only what they name.
+4. **Musts.** Budget ceiling, where data must sit, sign-in, systems it must connect to,
+   and any other pass/fail rule. A blank means that rule is not in play. Do not invent one.
+5. **Candidates.** Which options to include, and which to leave off.
+6. **Horizon.** How many years, or they accept 3 and the report will say it was assumed.
+7. **What should win a tie.** At most four outcomes in their words. After they answer,
+   translate those into the step 5 weights, show that sentence, and only then score.
+8. **Lookups.** Which facts above they do not know and want found. Only those. A lookup
+   is not a licence to map the business.
+
+If the job is still vague once they answer, ask again and stop. Do not fill it from a
+homepage, a lookup, or an earlier chat.
+
+Unattended, use only facts the prompt states. Do not research the business to fill the
+rest. A missing job is `NEEDS_CONTEXT`. Missing constraints use the generic musts and
+`DONE_WITH_CONCERNS`.
+
 ## The script
 
 `scripts/score_options.py` sits beside this file. It needs Python 3.9 or later and the
@@ -81,32 +111,25 @@ python3 scripts/score_options.py tco costs.json
 python3 scripts/score_options.py --selftest
 ```
 
-Each subcommand takes one JSON file, or `-` for stdin. Every sample below was made by
-running the script on the fictional example in reference.md, which also holds the full
-input rules.
+Each subcommand takes one JSON file, or `-` for stdin. reference.md holds the full input
+rules and the fictional example.
 
 | Exit | Means | Do |
 | --- | --- | --- |
 | 0 | a result, printed as JSON | read it |
 | 1 | `--selftest` failed | stop with `BLOCKED` |
-| 2 | bad usage or bad input; stderr says `error: <reason>`, naming the field and what it needs, such as `error: options[1].scores.integration.source must be one of verified, vendor-stated; every score says where it came from` | fix that field and run again |
+| 2 | bad input; stderr says `error:` and names the field | fix that field and run again |
 | 3 | a defect in the script; stderr says `internal error: ...` | stop with `BLOCKED`, quoting the message |
 
 ## The ten steps
 
 ### 1. Frame the need
 
-Write one decision statement and the facts that bound it:
+Write one decision statement from the intake, and nothing the person did not say:
+the decision, who uses it, the volume, what it must connect to, what is out of scope,
+and the horizon.
 
-```
-Decision: Select an expense-management tool for a 40-person team
-Users: 40 claimants, 3 approvers, 1 finance admin
-Volume: about 300 claims a month
-Must connect to: the accounting system already in use
-Horizon: 3 years
-```
-
-If the job the tool does is still vague ("something for finance"), ask before going on.
+If the intake has not been answered, go back and do it. Do not frame from research.
 
 ### 2. Build or buy
 
@@ -127,10 +150,11 @@ buy yet", with the nearest workaround, and status `DONE_WITH_CONCERNS`.
 
 ### 3. Longlist
 
-Collect candidates from the research route the `selection-research` hook names, or from
-public sources, plus any the person named. Analyst market maps (a Gartner Magic Quadrant or
-Critical Capabilities note, a Forrester Wave) **narrow the field; they are never the
-verdict**, and their publishers say so. A niche vendor can fit better than a market leader.
+Only after the intake. Include the candidates they named, leave off the ones they
+excluded, and do not add a product they use for a different job. Then add others from
+the research route the `selection-research` hook names, or from public sources, plus any
+lookup they asked for. An analyst market map narrows the field and is never the verdict. A
+niche vendor can fit better than a market leader.
 
 Aim for three to eight. With exactly one, there is nothing to compare: say so, and judge it
 against the musts and against doing nothing. With **none**, the capability is not yet sold
@@ -164,55 +188,41 @@ does not cover: vendor viability, exit and data portability, implementation effo
 contract terms. reference.md turns each into plain questions.
 
 Weight each want **1 to 10**, the most important at 10 and the rest relative to it
-(Kepner-Tregoe). Fix the weights **before anyone scores an option**, and have the person
-confirm them: weights set after scoring get tuned to a favourite.
+(Kepner-Tregoe). The numbers are the translation of intake item 7, fixed before any
+option is scored. Weights set after scoring get tuned to a favourite.
 
 When the people involved disagree on weights, compare the wants in pairs instead (AHP) and
 let the script derive the weights. Each cell says how much more the row's want matters than
 the column's, on Saaty's 1 to 9 scale, with reciprocals below the diagonal:
 
 ```json
-{
-  "criteria": ["interaction-capability", "integration", "exit-portability", "vendor-viability"],
-  "matrix": [[1, 2, 3, 3], [0.5, 1, 2, 2], [0.3333, 0.5, 1, 1], [0.3333, 0.5, 1, 1]]
-}
+{"criteria": ["interaction-capability", "integration"], "matrix": [[1, 2], [0.5, 1]]}
 ```
 
 ```
 python3 scripts/score_options.py ahp pairwise.json
 ```
 
-```json
-{
-  "weights": {"interaction-capability": 0.4554, "integration": 0.2628, "exit-portability": 0.1409, "vendor-viability": 0.1409},
-  "kt_weights": {"interaction-capability": 10, "integration": 6, "exit-portability": 3, "vendor-viability": 3},
-  "consistency_ratio": 0.004,
-  "consistent": true
-}
-```
-
-`kt_weights` drop straight into step 6. When `consistent` is `false` (consistency ratio above
-0.1), the comparisons contradict each other: show the person the ratio and ask them to revisit
-the pairs, rather than using the weights.
+A consistent result includes `kt_weights` on a 1 to 10 scale, `consistency_ratio`, and
+`consistent: true`. `kt_weights` drop straight into step 6. When `consistent` is `false`
+(consistency ratio above 0.1), the comparisons contradict each other: show the person the
+ratio and ask them to revisit the pairs, rather than using the weights.
 
 ### 6. Score the survivors
 
 Score every surviving option on every want, **0 to 5**, each with evidence. Every score
 states its `source`, and the script refuses one that does not: `verified` when you or the
 person saw it (a trial, a test, a document the business holds), `vendor-stated` when it
-rests on the vendor's word. The input, cut to one must, one want and two options from the
-example in reference.md:
+rests on the vendor's word. One must, one want and two options:
 
 ```json
 {
   "musts": [{"id": "sso"}],
   "wants": [{"id": "interaction-capability", "weight": 10}],
   "options": [
-    {"name": "Ledgerly",
-     "musts": [{"id": "sso", "pass": true, "evidence": "SAML tested in trial tenant"}],
-     "scores": {"interaction-capability": {"score": 4, "source": "verified", "evidence": "5 of 6 testers finished a claim unaided"}}},
-    {"name": "Receiptwise",
-     "musts": [{"id": "sso", "pass": false, "evidence": "SSO only on enterprise tier, above budget ceiling"}]}
+    {"name": "Ledgerly", "musts": [{"id": "sso", "pass": true, "evidence": "SAML tested in the trial"}],
+     "scores": {"interaction-capability": {"score": 4, "source": "verified", "evidence": "5 of 6 testers finished unaided"}}},
+    {"name": "Receiptwise", "musts": [{"id": "sso", "pass": false, "evidence": "SSO only above the budget ceiling"}]}
   ]
 }
 ```
@@ -223,28 +233,9 @@ An eliminated option needs no `scores`. Then run:
 python3 scripts/score_options.py score options.json
 ```
 
-The full example's output, with the arrays folded onto fewer lines and nothing else edited:
-
-```json
-{
-  "max_total": 145,
-  "ranking": [
-    {"option": "Ledgerly", "total": 110, "percent": 75.9, "vendor_stated_scores": 1},
-    {"option": "Tallybook", "total": 94, "percent": 64.8, "vendor_stated_scores": 0}
-  ],
-  "eliminated": [
-    {"option": "Receiptwise", "failed": [{"must": "sso", "evidence": "SSO only on enterprise tier, above budget ceiling"}]}
-  ],
-  "unconfirmed": [],
-  "incomplete": [],
-  "flips": [],
-  "margin_percent": 14.5,
-  "lead_rests_on_vendor_claims": false,
-  "verdict": "CLEAR_LEADER"
-}
-```
-
-The verdict decides what happens next:
+The result includes `ranking` (total, percent, vendor_stated_scores), `eliminated`,
+`unconfirmed`, `incomplete`, `flips`, `margin_percent`, `lead_rests_on_vendor_claims`,
+and `verdict`. The verdict decides what happens next:
 
 | `verdict` | When | Do |
 | --- | --- | --- |
@@ -277,47 +268,24 @@ say why.
 
 ### 8. Total cost of ownership
 
-Cost each finalist over the horizon, by year, with every line in one category: `go-live`,
-`run`, `support`, `upgrade`, `exit`, `internal-time`. Include staff time and the cost of
-leaving, not just the licence. One amount per year, cut here to one option and two lines
-from the example in reference.md:
+Cost each finalist over the horizon, by year, with every line in one category:
 
-```json
-{
-  "currency": "GBP",
-  "horizon_years": 3,
-  "options": [
-    {"name": "Ledgerly", "lines": [
-      {"item": "Licences, 40 seats", "category": "run", "amounts": [7200, 7560, 7940]},
-      {"item": "Export and archive at exit", "category": "exit", "amounts": [0, 0, 1500]}
-    ]}
-  ]
-}
 ```
+go-live  run  support  upgrade  exit  internal-time
+```
+
+Include staff time and the cost of leaving, not just the licence. One amount per year of
+the horizon, in one currency.
 
 ```
 python3 scripts/score_options.py tco costs.json
 ```
 
-Trimmed from the example's output:
-
-```json
-{
-  "currency": "GBP",
-  "horizon_years": 3,
-  "options": [
-    {"option": "Ledgerly", "per_year": [14300.0, 10660.0, 12540.0], "total": 37500.0,
-     "missing_categories": ["support", "upgrade"], "possible_double_count": []},
-    {"option": "Tallybook", "per_year": [14550.0, 13650.0, 14310.0], "total": 42510.0,
-     "missing_categories": ["support", "upgrade", "exit"], "possible_double_count": []}
-  ]
-}
-```
-
-`missing_categories` lists categories with no line. Each is either a real zero (say so) or
-an uncounted cost (find it): never leave one unexplained. `possible_double_count` names
-items that appear twice; check that they are two different costs. Options come back
-cheapest first.
+Each option comes back with `per_year`, `total`, `missing_categories` and
+`possible_double_count`, cheapest first. `missing_categories` lists categories with no
+line. Each is either a real zero (say so) or an uncounted cost (find it): never leave one
+unexplained. `possible_double_count` names items that appear twice; check that they are
+two different costs.
 
 **Check the budget ceiling again on the full cost.** If a finalist's yearly cost here breaks
 the ceiling from step 4, that must now fails: eliminate it with the cost line as evidence,
@@ -326,45 +294,40 @@ outcome is `NO_SURVIVORS`.
 
 ### 9. Pilot gate
 
-Before the choice is final, set a Trial: who uses it, on what real work, for how long, and
-the success criteria that would make it Adopt. Use the riskiest want and the top risk from
-step 7 as criteria: a pilot that tests only what is already known proves nothing.
-
-```
-Pilot: Ledgerly, 6 weeks, 8 claimants and 1 approver, real claims
-Adopt if: 90% of claims submitted unaided; accounting sync posts without manual fixes;
-          a full export of pilot data opens cleanly in a spreadsheet
-Stop if: any sync error loses a claim
-```
+Before the choice is final, set a Trial: who uses it, on what real work, for how long,
+and the Adopt and Stop tests. Use the riskiest want and the top risk from step 7 as
+criteria: a pilot that tests only what is already known proves nothing.
 
 ### 10. Report
 
-A compact table, one row per option including the eliminated ones, then one recommendation
+The person sees three beats and no others: one intake form, the work with no further
+questions, then one comparison.
+
+Open the comparison with their answers in a few lines, so a wrong intake is obvious.
+Then one short block per option, including those that failed a rule: what it is, whether
+it passes the rules they set, what it is better at, what can go wrong, and the money.
+Label every estimate. Scores, weights, percents, and verdict names stay out of what the
+person reads and out of every question.
+
+A clear leader ends with one recommendation in that plain language, the pilot, and who
+confirms it.
+
+A close call, a tie, or a fragile lead is a choice question that stands alone, because a
+form can appear without the prose above it. Each option is a sentence about the
+difference, written so someone who never saw a score can choose.
+
+When nobody is in the conversation, do not pick. Describe what separates the options and
+end `DONE_WITH_CONCERNS`.
+
+Then list what was not checked, and whether the companions were used. End with a status
 line:
-
-| Option | Musts | Weighted | Top risk | 3-year TCO |
-| --- | --- | --- | --- | --- |
-| Ledgerly | pass | 110 of 145 (76%), 1 score vendor-stated | CSV-only export (medium, high) | GBP 37,500 |
-| Tallybook | pass | 94 of 145 (65%) | young vendor (medium, medium) | GBP 42,510 |
-| Receiptwise | fail: SSO only above budget | not scored | | not costed |
-
-**Recommendation:** Ledgerly, through the 6-week pilot above, confirmed by the finance lead.
-
-On `CLOSE_CALL`, `TIE` or `FRAGILE`, the last line asks the person to choose, and names what
-separates the options. Never present a close call in the same register as a clear one. When
-nobody is in the conversation, do not pick: report the shortlist with what separates the
-options, and end `DONE_WITH_CONCERNS`, naming the choice still to be made.
-
-Then list what was not checked (vendor claims taken on trust, costs estimated rather than
-quoted, a must that rests on a sales answer), and whether the companions were used. End with
-a status line:
 
 | Status | When |
 | --- | --- |
 | `DONE` | a recommendation or "build, not select", with evidence for every must and score |
 | `DONE_WITH_CONCERNS` | a recommendation, but weights unconfirmed, scores largely vendor-stated, costs estimated, or no house criteria applied; or "nothing to buy yet" from step 2; or, unattended, a close call, tie or fragile lead left for a person to choose. Name which |
 | `BLOCKED` | `NO_SURVIVORS` unattended, the script fails its selftest, or it exits 3 |
-| `NEEDS_CONTEXT` | the need itself is unknown. Name what is missing |
+| `NEEDS_CONTEXT` | the intake has not been answered, or the job is still unknown. Name what is missing. Do not go and look it up |
 
 ## Files
 
