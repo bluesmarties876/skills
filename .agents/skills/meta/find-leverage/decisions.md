@@ -153,3 +153,13 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Proposed by:** find-leverage
 - **Verdict reason:** Reports cannot be read until the collector sees the skills.
 - **Signal awaited:** none until built.
+
+### D-13: Nothing waits on a person remembering
+
+- **Date:** 2026-10-22
+- **Status:** pending
+- **Broken flow:** every meta skill is a run a person starts and that ends at its own checklist, so with no thread open the network does nothing: accepted decisions sit unbuilt and a recorded verdict counts as finished. That contradicts the purpose of the meta-system, which is to improve with as little human input as possible.
+- **Change:** a sixth absolute rule in `PURPOSE.md`: every state has an owner and a trigger that needs no thread, a person decides but never has to start, and a gap in this outranks every other change.
+- **Proposed by:** the owner
+- **Verdict reason:** (awaiting the owner)
+- **Signal awaited:** none until built.
