@@ -43,6 +43,12 @@ person reports dissatisfaction, belong to that workspace. How a workspace keeps 
 resolves its settings, including team rules and per-person settings, is
 [Workspace settings](CONVENTIONS.md#workspace-settings).
 
+`role` is a workspace setting, not a fact about this repo. This workspace's is `master ally`.
+`wake` reads `role` from the workspace it is running in, and does the duties in
+[SCHEDULE.md](SCHEDULE.md) for that role. A client workspace sets `client ally` in her own
+settings. An agent in the core does not copy this value into another workspace, and an
+ally running somewhere else does not read her role from this file.
+
 ## Writing to this repo
 
 For any agent that changes a file here, through a skill or directly.

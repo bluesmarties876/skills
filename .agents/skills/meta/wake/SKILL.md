@@ -21,7 +21,7 @@ Runs unattended ([CONVENTIONS.md](../../../../CONVENTIONS.md#who-is-watching)). 
 | Input | Needed for | Without it |
 | --- | --- | --- |
 | `SCHEDULE.md` from the core's base branch, read at this wake | the duties, intervals and limits | stop with 🔴 Stopped and send it through `follow-ups`. Never use a copy from an earlier wake |
-| This ally's role: master ally or client ally | which duties are hers | 🟡 Your turn, asking which |
+| `role`, a workspace setting of the workspace she is running in | which rows of the schedule are hers. It matches the Role column | stop with 🟡 Your turn, naming the setting. Do not infer it from write access, and do not read it from the core when running in another workspace |
 | The ally's peer agents and their own schedules, as the host shows them | keeping peer duties in place | report that peers could not be checked; run the rest |
 
 ## Safety
@@ -35,7 +35,7 @@ Runs unattended ([CONVENTIONS.md](../../../../CONVENTIONS.md#who-is-watching)). 
 
 ### 1. Read the schedule and the record
 
-Fetch `SCHEDULE.md` from the core's base branch now. Read the `wake-record`: when each duty last ran.
+Fetch `SCHEDULE.md` from the core's base branch now. Read `role` from the workspace she is running in, and the `wake-record`: when each duty last ran. Her duties are the rows whose Role matches `role`.
 
 ### 2. Set the timer
 
@@ -65,7 +65,7 @@ Reply as [write-run-report](../write-run-report/SKILL.md) says. The reply is rea
 | --- | --- |
 | 🟢 Finished | Every due duty ran and nothing needs a person. |
 | 🔵 Waiting | Every due duty ran or was handed on, and each question for a person was sent through `follow-ups`. |
-| 🟡 Your turn | Something needs a person and `follow-ups` is unfilled, or the role is unknown. |
+| 🟡 Your turn | Something needs a person and `follow-ups` is unfilled, or `role` is missing. |
 | 🔴 Stopped | The schedule could not be read. |
 
 ## Known limits
