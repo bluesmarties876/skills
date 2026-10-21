@@ -117,12 +117,12 @@ The first seven came from the maintainer, before this skill existed. They are th
 ### D-9: The core declares schedules, and each ally reconciles her peers to them
 
 - **Date:** 2026-10-20
-- **Status:** pending
+- **Status:** built
 - **Broken flow:** when the core changes how often a peer should run a method (a daily check becoming weekly, say), nothing tells the peers in each workspace, so their schedules drift from the core's intent and no one notices.
-- **Change:** a declared-schedule manifest in the core, and a step in each client ally that compares her peers' schedules with it and spawns each affected peer to update its own schedule or propose the update. D-1 already does this for one schedule, the daily `review-own-threads`. Overlaps D-4's daily check of peer rules.
+- **Change:** a declared-schedule manifest in the core, and a step in each client ally that compares her peers' schedules with it and spawns each affected peer to update its own schedule or propose the update. D-1 already does this for one schedule, the daily `review-own-threads`. Overlaps D-4's daily check of peer rules. Built as `SCHEDULE.md` at the repo root and the `wake` skill: each ally has one timer, and at each wake she reads the schedule and does what is due for her role, including setting her own timer and starting peers to set up or update their duties.
 - **Proposed by:** the maintainer
-- **Verdict reason:** (awaiting a person)
-- **Signal awaited:** none until built.
+- **Verdict reason:** every ally checks one schedule when she wakes, so no one manages a schedule per duty.
+- **Signal awaited:** each ally's timer created, and a first wake recorded in each workspace.
 
 ### D-10: Client workspaces can put forward a skill for the core
 
