@@ -1,6 +1,6 @@
 ---
 name: find-leverage
-description: Finds the one small change to a skills network that would pay off most, by the definition of value in the repo's PURPOSE.md. Models the network (a core repo, the workspaces that run it through allies, and the signals they send back) as places and states, finds the flows nothing senses, moves, guards or schedules, and ranks them by reach, inheritance and how much each makes the network better at improving itself. Proposes one change and a runner-up, never builds them, and records each proposal and verdict in decisions.md so its judgement improves.
+description: Finds the one small change to a skills network that would pay off most, by the definition of value in the repo's PURPOSE.md. Models the network (a core repo, the workspaces that run it through allies, and the signals they send back) as places and states, finds the flows nothing senses, moves, guards or schedules, and ranks them by reach, inheritance, self-improvement and what accepted work they unblock. Proposes one change and a runner-up, never builds them, and records each proposal and verdict in decisions.md so its judgement improves.
 ---
 
 # Find leverage
@@ -113,18 +113,23 @@ Before scoring, drop any candidate whose fix would break an absolute rule in `PU
 
 ### 5. Score
 
-Score each surviving candidate on the terms `PURPOSE.md` defines. Coarse is enough: a 1 to 3 on each, with one line of reason.
+Score each surviving candidate on the terms `PURPOSE.md` defines, plus unlocks: how much accepted work cannot proceed until this change exists. Coarse is enough: a 1 to 3 on each, with one line of reason.
 
 | Term | 1 | 3 |
 | --- | --- | --- |
 | Reach | one workspace | every workspace |
 | Inheritance | helps one method once | every future skill passes through it |
 | Self-improvement | changes nothing about how the network improves | makes the network sense, route or guard something it could not before |
-| Work | a large build | an edit, or one small skill |
-| Blast radius | could break every workspace by the next morning | touches nothing that runs today |
-| Attention | needs repeated human judgement | needs one yes |
+| Unlocks | nothing waits on it | two or more accepted or pending decisions cannot be built, or an open loop's signal cannot arrive, until it exists |
+| Work | an edit, or one small skill | a large build |
+| Blast radius | touches nothing that runs today | could break every workspace by the next morning |
+| Attention | needs one yes | needs repeated human judgement, or a design approval |
 
-Rank by the first three multiplied, divided by the last three (scored as cost, so a 3 is the expensive end). Where two are close, prefer the change one level up: the pipeline over the one skill, the sensor over the guess, the guard over the cleanup. Where they are still tied, `PURPOSE.md`'s priority order decides.
+For unlocks, 2 means exactly one accepted or pending decision, or one open loop, waits on it. Name what it unlocks. A dependency you cannot point to in `decisions.md`, or one whose status is rejected or superseded, scores 1.
+
+Score = (reach × inheritance × self-improvement × unlocks) ÷ (work × blast radius × attention). Rank by it. Where two are within a quarter of the higher score, prefer the change one level up: the pipeline over the one skill, the sensor over the guess, the guard over the cleanup. Where they are still tied, `PURPOSE.md`'s priority order decides.
+
+The score decides. If your judgement disagrees with the ranking, do not reorder it: report the ranking as scored, say in one line what the score misses, and note it under Not checked as a possible defect in this step.
 
 ### 6. Decide whether anything is worth proposing
 
@@ -132,7 +137,7 @@ Rank by the first three multiplied, divided by the last three (scored as cost, s
 
 ### 7. Report
 
-Write one recommendation and one runner-up as a document, in this shape:
+Write one recommendation, one runner-up and the full score table as a document, in this shape:
 
 ```markdown
 # Leverage: <date>
@@ -146,10 +151,19 @@ Evidence: <structure only | structure and N ally reports>. Charter: <ratified | 
 **Proof it worked:** <the existing check, script or signal that would show it>
 **Risk:** <blast radius, and what could go wrong>
 **Needs:** <one yes | a new kind of power, so a person must approve the design>
-**Score:** reach 3, inheritance 3, self-improvement 2 / work 1, blast 1, attention 1
+**Unlocks:** <the decisions or open loops waiting on it, or "nothing">
 
 ## Runner-up
 <same shape>
+
+## Scores
+Every candidate that survived Step 4, highest first:
+
+| Candidate | Reach | Inheritance | Self-improvement | Unlocks | Work | Blast radius | Attention | Score |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| <name> | 3 | 3 | 2 | 1 | 1 | 1 | 1 | 18 |
+
+<one line per candidate giving the reason for each term that is not obvious>
 
 ## Dropped
 <candidate: the rule it broke>
