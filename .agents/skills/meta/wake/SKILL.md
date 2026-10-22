@@ -51,7 +51,9 @@ A duty is due when its interval has passed since it last ran, or it has never ru
 | keeps peer duties in place | for each duty of role "every peer agent", check each peer has it on schedule; start a peer whose duty is missing or whose heartbeat is stale, and ask it to set up or run that duty |
 | names a skill the core does not hold yet | do not invent one. Send through `follow-ups` that the duty is due and has no skill |
 
-Record each duty's result in the `wake-record` as it finishes, so a wake that stops halfway resumes at the next one. One duty failing does not stop the others.
+Record each duty's result in the `wake-record` as it finishes, so a wake that stops halfway resumes at the next one. A duty that fails is also sent through `follow-ups`, naming the duty and what stopped it; the record alone reaches no one. One duty failing does not stop the others, with one exception:
+
+**A write refused for lack of permission stops the wake.** If a duty's write is refused because this workspace may not make it, `role` may be wrong. Run no more of this role's duties, send through `follow-ups` that `role` says one thing and the workspace's access says another, and end 🔴 Stopped. Never carry on as the other role.
 
 ### 4. Record the wake
 
@@ -66,9 +68,10 @@ Reply as [write-run-report](../write-run-report/SKILL.md) says. The reply is rea
 | 🟢 Finished | Every due duty ran and nothing needs a person. |
 | 🔵 Waiting | Every due duty ran or was handed on, and each question for a person was sent through `follow-ups`. |
 | 🟡 Your turn | Something needs a person and `follow-ups` is unfilled, or `role` is missing. |
-| 🔴 Stopped | The schedule could not be read. |
+| 🔴 Stopped | The schedule could not be read, or a write was refused for lack of permission. |
 
 ## Known limits
 
 1. The timer itself is created once, by a person, where the ally runs. Wake can correct its interval, not create it.
 2. A wake that never fires leaves no record of its own. The master ally sees a client ally go quiet through the reports she collects, not through this skill.
+3. A master ally whose `role` says client ally is refused nothing, so this skill cannot catch it. Her master duties simply stop, and the sign is that `find-leverage` stops recording runs.
