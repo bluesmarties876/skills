@@ -61,8 +61,8 @@ method. Task capture is delegated to [capture-task-from-email](../capture-task-f
 | --- | --- | --- |
 | `triage-classification` | sender and subject rules for this context: which notifications are noise, which senders are clients, which are personal | classify from content alone and put anything uncertain under "needs judgement" |
 | `triage-sensitive` | topics, senders or labels that are personal, legal, medical, financial or otherwise ask-first | treat family, health, legal, complaint and money matters as ask-first; never bulk-close them |
-| `triage-approval-style` | how this person wants decisions presented and grouped | one structured question per proposed task; unlike decisions in separate questions; like decisions on verified items grouped into one |
-| `task-platform` | which task tool to use and its defaults (projects, scheduling, deadline conventions) | ask which tool once per run; apply only explicit answers; never infer a convention |
+| `triage-approval-style` | how this person wants decisions presented and grouped, beyond the default in step 4 | use the decision format in step 4 |
+| `task-platform` | which task tool to use and its defaults (projects, scheduling, deadline conventions) | ask which tool once per run; then propose every setting as [capture-task-from-email](../capture-task-from-email/SKILL.md) says, and create only what is approved |
 | `reply-drafter` | the method for composing replies in this person's voice and signature | compose a plain draft reply that preserves the full preceding chain; draft only |
 
 A companion opens by naming the hook it fills. Read the harness's agent instructions for
@@ -74,7 +74,12 @@ with 🟡 Your turn, asking for it to be fixed.
 ### 1. Fetch the batch
 
 List the inbox for each mailbox, oldest-to-newest within the batch, following pagination
-until the batch is full or the inbox is exhausted. Record the count per mailbox. Keep a
+until the batch is full or the inbox is exhausted. Count only conversations with a message
+currently in the inbox. Some platforms' conversation listings also return conversations
+whose messages have all left the inbox (snoozed, sent-only, or archived elsewhere); those
+are not inbox mail, are not counted, and are not proposed for closing. A snoozed reminder
+is the person's own deliberate follow-up, not a finished conversation. Record the count
+per mailbox. Keep a
 ledger for the run: every conversation id seen, its classification, the decision taken,
 and every write made (what, which id, result).
 
@@ -91,6 +96,10 @@ and whether the person has already acted (a sent reply, a draft in progress).
 Where several conversations are about one piece of work (the same project, event or
 person), cluster them. A cluster is decided together, as one project with several
 actions, never as several unrelated tasks.
+
+Raise time-critical items first. Anything with a deadline before the run is likely to
+end (a decision wanted today, an event tomorrow) goes at the top of the first batch, even
+if it is newer than the batch would otherwise reach.
 
 Read the `triage-sensitive` hook. Anything it names, or anything that reads as personal,
 legal, medical, financial or a complaint, is marked ask-first: it may be proposed, but
@@ -120,13 +129,37 @@ State facts the proposal depends on that the agent could not verify (is this sti
 outstanding? who owns this?) as questions, not assumptions.
 
 - `review` and `unattended`: the report is the output. Go to step 8.
-- `approve`: present the decisions as structured questions, following the
-  `triage-approval-style` hook. Each proposed task is its own question carrying its
-  proposed settings, so the person can accept it or correct a setting. Archive decisions
-  for items whose work is already verified elsewhere are one grouped question.
+- `approve`: immediately before asking, re-check each conversation for a reply the
+  person has sent, a draft in progress, or work already captured since step 2. Settle
+  those without asking. Then present the decisions as structured questions, following the
+  `triage-approval-style` hook, or the decision format below without one.
+
+**Decision format.** Every question must be answerable without reading anything else:
+
+- **Context in one or two short sentences**: what the email is, who sent it, and what it
+  asks. Not a paragraph.
+- **The proposal in the option itself.** An option says exactly what will happen, with
+  every setting visible, so choosing it is the whole decision. For a task: "Create task:
+  <name> · <project> · <estimate> · <priority> · due <date time zone>, <firmness>
+  (auto-scheduled)". For a close: "Archive these 3 emails". Never a bare "Create as
+  proposed" whose settings are only in the question text or the report.
+- **Propose, don't ask.** Fill every setting with a sensible value, as
+  [capture-task-from-email](../capture-task-from-email/SKILL.md) says. The person corrects
+  a wrong value; they are never asked to supply a routine one.
+- **The recommended option first, and marked**, among two to four options. The free-text
+  answer is where corrections go.
+- **One question per decision.** Each proposed task, reply or ask-first item is its own
+  question; a send, an archive and a task are separate questions. Several questions in
+  one set is right. Archive decisions for items whose work is verified elsewhere, and for
+  routine no-action mail, are one grouped question that names every item it covers.
 
 An answer that gives feedback instead of a decision ("ask these together next time") is
-not approval for that item. Apply the feedback, and ask that item again.
+not approval for that item. Apply the feedback, and ask that item again. A skipped
+question is not approved either.
+
+Unsubscribing is a separate action from archiving, and needs its own approval by name.
+It may need a browser or the sender's unsubscribe page rather than the mail integration;
+where neither is available, say so, and archive only if the close was approved.
 
 ### 5. Execute approved actions
 
@@ -141,8 +174,10 @@ Only what was approved, only on the ids read in step 2, in this order:
    read back, and the person approved the close. See step 6.
 
 Before any write, re-read the target's latest message id. If a newer message has
-arrived since step 2, do not act: put the conversation back into the next batch as new
-input.
+arrived since step 2, read it before acting: a new message from the sender is new input
+for the next batch; a reply the person sent themselves usually settles the item. Mail that
+arrives in the inbox during the run is read and proposed in the next batch, never closed
+under an approval given before it existed.
 
 ### 6. Close
 
@@ -155,6 +190,11 @@ is new input for the next batch, not a failed close.
 Read the inbox again. Confirm every closed id is gone and every kept id is present.
 Confirm every created task by its id. Note the counts: seen, replied, captured,
 closed, kept, and why each kept item stays.
+
+Anything left open needs an owner and a trigger, not only a line in the reply: a kept
+email waiting on the person, a task the platform scheduled after its deadline, a
+decision still pending. Record it through the `follow-ups` hook, or ask where it should
+live, so nothing waits on someone remembering.
 
 ### 8. Loop or stop
 
