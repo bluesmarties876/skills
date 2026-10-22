@@ -167,9 +167,9 @@ The first seven came from the maintainer, before this skill existed. They are th
 ### D-14: A skill that builds the oldest specified decision
 
 - **Date:** 2026-10-22
-- **Status:** pending
+- **Status:** accepted
 - **Broken flow:** an accepted decision whose change is specified sits until a person starts a thread, because the schedule names that duty and the core holds no skill for it.
 - **Change:** one skill the master ally runs from that schedule row. It takes the oldest accepted decision whose change names a concrete edit, opens a pull request through the existing write path, and does not merge. A decision whose mechanism is still undecided is handed back, not guessed.
 - **Proposed by:** find-leverage
-- **Verdict reason:** (awaiting a person)
+- **Verdict reason:** The person accepted the proposal and gave no further sentence.
 - **Signal awaited:** none until built.
