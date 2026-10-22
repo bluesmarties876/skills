@@ -418,6 +418,17 @@ unexpectedly:
   way, to `HARD`/`SOFT`.
 - **No calendar/events endpoint exists**, which is why "next up" has to be derived from
   `scheduledStart` rather than fetched.
+- **Descriptions come back as HTML.** A Markdown description sent on create or update is
+  stored and returned as HTML (paragraphs, `<br />`, escaped `&amp;`). Compare a read-back
+  description as text with tags stripped, entities unescaped and whitespace collapsed,
+  not byte for byte.
+- **`autoScheduled` is not echoed on read.** `GET /v1/tasks/{id}` returns `deadlineType`,
+  `startOn`, `scheduledStart` and `schedulingIssue`, but no `autoScheduled` object. Confirm
+  auto-scheduling from `deadlineType` and a non-null `startOn`; `scheduledStart` is often
+  null immediately after creation and fills in once Motion schedules the task.
+- **A scheduled slot can land after the deadline.** Motion may place a task's
+  `scheduledStart` later than its `dueDate` when the calendar is full. Compare the two and
+  report it; it is not an API error.
 
 ## Ending
 

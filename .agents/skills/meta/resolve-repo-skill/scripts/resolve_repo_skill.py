@@ -9,6 +9,9 @@ Flags:
     --ref=REF       branch or sha to resolve against (default: main, then the
                     repo's own default branch)
     --path=FOLDER   disambiguate when two folders share the skill's leaf name
+    --fetch=DIR     download every file in the skill's folder into DIR, keeping
+                    the folder's own layout (scripts/, references), so its
+                    scripts can be run locally; prints each file written
 
 The repo coordinate is taken from the first positional argument when it
 contains a "/", and otherwise from the SKILL_REPO environment variable, so one
@@ -161,6 +164,62 @@ def default_branch(owner, repo):
     return json.loads(body).get("default_branch")
 
 
+def read_file(owner, repo, ref, repo_path):
+    """Read one repo file at `ref` through the API host -> its text.
+
+    Asks without the token first, then retries with it on 404, because 404
+    means "no such file" OR "credential rejected" and the two cannot be told
+    apart from the status alone.
+    """
+    url = "%s/repos/%s/%s/contents/%s?ref=%s" % (
+        API, owner, repo, quote(repo_path, safe="/"), quote(ref, safe=""),
+    )
+    status, body, headers = curl(url, auth=False, accept=RAW_ACCEPT)
+    if status == 404 and env_value(TOKEN_ENV):
+        status, body, headers = curl(url, auth=True, accept=RAW_ACCEPT)
+    if status != 200:
+        if status in (401, 403):
+            die("%s was rejected by %s (HTTP %d) while reading %s at ref '%s'."
+                % (TOKEN_ENV, API_HOST, status, repo_path, ref))
+        if status == 404:
+            die(
+                "cannot read %s at ref '%s' — GitHub returned 404, which means either "
+                "no such file at that ref, or a credential %s was rejected; a private "
+                "repo needs a valid token." % (repo_path, ref, TOKEN_ENV)
+            )
+        die("could not read %s at ref '%s' (HTTP %s)" % (repo_path, ref, status))
+    return body
+
+
+def fetch_file(owner, repo, ref, repo_path, dest):
+    """Download one repo file's exact bytes to `dest` through the API host."""
+    url = "%s/repos/%s/%s/contents/%s?ref=%s" % (
+        API, owner, repo, quote(repo_path, safe="/"), quote(ref, safe=""),
+    )
+    for auth in (False, True):
+        if auth and not env_value(TOKEN_ENV):
+            break
+        cmd = ["curl", "-sSL", "--max-time", "60", "-w", "%{http_code}",
+               "-H", "Accept: " + RAW_ACCEPT, "-o", dest]
+        token = env_value(TOKEN_ENV)
+        if auth and token and host_of(url) == API_HOST:
+            cmd += ["-H", "Authorization: Bearer " + token]
+        proc = subprocess.run(cmd + [url], capture_output=True, text=True)
+        if proc.returncode != 0:
+            die("could not reach GitHub (%s)" % (proc.stderr.strip() or "curl exit %d" % proc.returncode))
+        try:
+            status = int(proc.stdout.strip().split()[-1])
+        except (ValueError, IndexError):
+            status = 0
+        if status == 200:
+            return
+        if status != 404:
+            break
+    if os.path.exists(dest):
+        os.remove(dest)
+    die("could not download %s at ref '%s' (HTTP %s)" % (repo_path, ref, status))
+
+
 def find(tree, skill):
     """Every (folder, files) whose leaf folder name is `skill`."""
     matches = []
@@ -186,6 +245,7 @@ def find(tree, skill):
 def main():
     ref = path = None
     read = False
+    fetch_dir = None
     positional = []
 
     for arg in sys.argv[1:]:
@@ -193,6 +253,10 @@ def main():
             read = True
         elif arg.startswith("--ref="):
             ref = arg[len("--ref="):].strip() or None
+        elif arg.startswith("--fetch="):
+            fetch_dir = arg[len("--fetch="):].strip() or None
+            if not fetch_dir:
+                die("--fetch needs a directory, e.g. --fetch=./my-skill")
         elif arg.startswith("--path="):
             path = arg[len("--path="):].strip().strip("/") or None
         elif arg.startswith("--"):
@@ -276,30 +340,38 @@ def main():
 
     folder, files = matches[0]
 
+    if read and fetch_dir:
+        die("use --read or --fetch, not both")
+
+    if fetch_dir:
+        root = os.path.abspath(fetch_dir)
+        written = []
+        for name in files:
+            parts = name.split("/")
+            if any(p in ("", ".", "..") for p in parts) or os.path.isabs(name):
+                die("refusing an unsafe path in the repo listing: %s" % name)
+            dest = os.path.join(root, *parts)
+            if os.path.commonpath([root, os.path.abspath(dest)]) != root:
+                die("refusing a path outside %s: %s" % (root, name))
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            fetch_file(owner, repo, used_ref, folder + "/" + name, dest)
+            written.append(dest)
+        print("skill:  %s" % skill)
+        print("repo:   %s" % coord)
+        print("ref:    %s" % used_ref)
+        print("folder: %s" % folder)
+        print("fetched %d file(s) into %s:" % (len(written), root))
+        for d in written:
+            print("  %s" % d)
+        print()
+        print("Read %s first." % os.path.join(root, "SKILL.md"))
+        return 0
+
     if read:
-        # Read the file through the API host. A CDN host does not expect this
-        # script's credential and rejects the request when it is sent, so the
-        # read goes to the host that issued the token. See the module docstring.
-        url = "%s/repos/%s/%s/contents/%s/SKILL.md" % (
-            API, owner, repo, quote(folder, safe="/"),
-        )
-        status, body, headers = curl(url, auth=False, accept=RAW_ACCEPT)
-        if status == 404 and env_value(TOKEN_ENV):
-            # 404 means "no such file" OR "your credential was rejected", and
-            # they are indistinguishable from the status alone. Re-ask with the
-            # token, since the repo may be private.
-            status, body, headers = curl(url, auth=True, accept=RAW_ACCEPT)
-        if status != 200:
-            if status in (401, 403):
-                die("%s was rejected by %s (HTTP %d) while reading %s/SKILL.md at ref '%s'."
-                    % (TOKEN_ENV, API_HOST, status, folder, used_ref))
-            if status == 404:
-                die(
-                    "cannot read %s/SKILL.md at ref '%s' — GitHub returned 404, which means "
-                    "either no such file at that ref, or a credential %s was rejected; a "
-                    "private repo needs a valid token." % (folder, used_ref, TOKEN_ENV)
-                )
-            die("could not read %s/SKILL.md at ref '%s' (HTTP %s)" % (folder, used_ref, status))
+        # Read the file through the API host, at the resolved ref. A CDN host
+        # does not expect this script's credential and rejects it, so the read
+        # goes to the host that issued the token. See the module docstring.
+        body = read_file(owner, repo, used_ref, folder + "/SKILL.md")
         sys.stdout.write(body)
         return 0
 

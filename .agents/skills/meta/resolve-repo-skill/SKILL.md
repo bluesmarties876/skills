@@ -25,6 +25,7 @@ python3 resolve_repo_skill.py {{owner}}/{{repo}} {{skill name}}
 | Flag      | Does                                                                                        |
 | --------- | ------------------------------------------------------------------------------------------- |
 | `--read`  | Print the skill's `SKILL.md` instead of the summary — one call straight to the instructions |
+| `--fetch=` | Download every file in the skill's folder into a local directory, keeping its layout, so the skill's scripts can be run. Prints each file written |
 | `--ref=`  | Branch or sha to resolve against. Default `main`, then the repo's own default branch        |
 | `--path=` | Disambiguate when two folders share the skill's leaf name                                   |
 
@@ -32,6 +33,7 @@ python3 resolve_repo_skill.py {{owner}}/{{repo}} {{skill name}}
 ```
 python3 resolve_repo_skill.py my-skill
 python3 resolve_repo_skill.py my-skill --read
+python3 resolve_repo_skill.py my-skill --fetch=./my-skill
 python3 resolve_repo_skill.py my-skill --path=team-area/my-skill
 python3 resolve_repo_skill.py some-owner/other-repo my-skill
 ```
@@ -67,6 +69,12 @@ If you adapt this script, keep that property. If you add a request to another ho
 ## Exit codes
 
 `0` found · `1` no such skill, or an ambiguous name (the message lists what is there) · `2` bad arguments, GitHub unreachable, or the request refused.
+
+## Running a skill's scripts
+
+A pointer skill's instructions often tell you to run a script that lives beside its `SKILL.md`. `--read` returns only the instructions; use `--fetch=<dir>` to bring the whole folder down first, then run the scripts from that directory with whatever credential wrapper the skill names. `--read` and `--fetch` are mutually exclusive. Both honour `--ref=`.
+
+`--fetch` refuses a listing entry that would land outside the target directory, and removes a partly written file when a download fails.
 
 ## What it handles
 

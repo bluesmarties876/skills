@@ -77,10 +77,15 @@ Run [infer-project](../../project-management/infer-project/SKILL.md) with the ac
 the email's context. Commit to its pick only when it reports a clear leader; otherwise
 the project is a question.
 
-Present one proposal with every setting named: name, project, estimate, priority, due
-date with time zone, deadline firmness, scheduling flag, and the description's first line
-(which cites the source email by subject and date). Interactive: ask, and accept
-corrections to any setting. Unattended: send the proposal through the `follow-ups` hook and end 🟡 Your turn.
+Present one proposal with every setting named and filled: name, project, estimate,
+priority, due date with time zone, deadline firmness, scheduling flag, and the
+description's first line (which cites the source email by subject and date). Propose a
+sensible value for every setting rather than asking the person to supply one: estimate
+from the size of the ask and from similar tasks on the platform, priority from urgency and
+the platform's default, the due date as below. The proposal is still only a proposal:
+nothing is created until it is approved, and a skipped answer is not approval.
+Interactive: ask, with the full proposal visible in the option the person picks, and
+accept corrections to any setting. Unattended: send the proposal through the `follow-ups` hook and end 🟡 Your turn.
 
 A due date the email states is proposed as stated. A due date the email only implies
 (a launch on Friday, a reply "by end of week") is proposed with the implication named,
@@ -97,7 +102,15 @@ deliberately does not authorise (a payment, an escalation, a reply to someone el
 
 Fetch the task by its returned id and compare every field to the approval: name,
 project, estimate, priority, due date, deadline firmness, scheduling flag, assignee. A
-mismatch is fixed and re-read, or reported. A task that was not read back is not
+mismatch is fixed and re-read, or reported.
+
+Compare what the platform stores, not its formatting: a platform may convert a submitted
+description into HTML, so compare descriptions as text with markup and whitespace
+normalised. Where the platform does not return a field on read (some never echo a
+scheduling flag), check the evidence it does return and say which field could not be read
+back. If the platform schedules the task after its deadline, report that in the reply as a
+risk, with the scheduled time, and record it as an open item; do not move the deadline
+without approval. A task that was not read back is not
 captured, and the caller must not close the source email on the strength of it.
 
 ## Checklist
@@ -107,7 +120,8 @@ captured, and the caller must not close the source email on the strength of it.
 - [ ] Every setting proposed by name; none applied from silence.
 - [ ] Implied dates labelled as implied; computed windows shown with their arithmetic.
 - [ ] Description cites the source email and names what the task does not authorise.
-- [ ] Task read back by id and compared field by field.
+- [ ] Every setting filled with a proposed value, shown in the approval option.
+- [ ] Task read back by id and compared field by field; a slot after the deadline is reported.
 
 ## Ending
 
