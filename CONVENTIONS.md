@@ -89,6 +89,10 @@ A business rule the whole team works to (how subject lines are written, say) is 
 5. **If nothing applies**, follow the skill's outcome for a missing setting: for a hook, its "Without one" column.
 6. **If two settings at the same level disagree** (same name, scope and strength, different values), stop with 🟡 Your turn, naming both. Never pick one.
 
+### Setting one that is missing
+
+A missing setting that changes whether a skill succeeds is not left as a name for a person to look up. The agent writes it into this workspace, as [write-workspace-setting](.agents/skills/meta/write-workspace-setting/SKILL.md) says, in the harness it is running in. A person supplies only a value the agent cannot know or must not choose (an address, a role, a decision); interactive, ask for it; unattended, send the question through `follow-ups` and say which setting it is for. The person never has to find where the harness keeps settings.
+
 ## Who is watching
 
 A run is **interactive** when a person is in the conversation, and **unattended** when nobody is: an automation, a webhook, a scheduled job. The prompt that starts an unattended run says so. If it does not, assume interactive.
