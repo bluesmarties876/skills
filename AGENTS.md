@@ -43,6 +43,11 @@ person reports dissatisfaction, belong to that workspace. How a workspace keeps 
 resolves its settings, including team rules and per-person settings, is
 [Workspace settings](CONVENTIONS.md#workspace-settings).
 
+`role` is unset here. It is a workspace setting, and this repo is not a workspace, so it
+cannot say which role a workspace has. `wake` reads `role` from the workspace it is running
+in and does the duties in [SCHEDULE.md](SCHEDULE.md) whose Role column matches. The values
+are that column. A workspace that does not set `role` leaves wake unable to choose.
+
 ## Writing to this repo
 
 For any agent that changes a file here, through a skill or directly.
