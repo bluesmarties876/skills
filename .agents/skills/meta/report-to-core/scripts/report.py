@@ -34,6 +34,7 @@ import os
 import secrets
 import subprocess
 import sys
+import tempfile
 from typing import Callable, Dict, List, Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -417,6 +418,18 @@ def selftest() -> int:
     # Dry run sends nothing.
     res = plan_and_send(day, build(day, vocab, skills), None, "ally-report", "ally-heartbeat")
     check("dry run plans without calling", res["actions"][0]["action"] == "open")
+
+    # Skills live under .agents. A skip of every dot-folder finds none of them.
+    fixture = tempfile.mkdtemp()
+    for rel in (".agents/skills/wake/SKILL.md", ".git/secret/SKILL.md",
+                ".cursor/nope/SKILL.md", "visible/alpha/SKILL.md"):
+        path = os.path.join(fixture, rel)
+        os.makedirs(os.path.dirname(path))
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("---\nname: x\n---\n")
+    found = R.core_skill_names(fixture)
+    check("a skill under .agents/skills is seen", "wake" in found and "alpha" in found)
+    check("skipped hidden folders are not skills", "secret" not in found and "nope" not in found)
 
     for f in fails:
         print("FAIL: " + f)
