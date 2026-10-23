@@ -80,11 +80,16 @@ def default_reference() -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reference.md")
 
 
+# Same hidden-folder skip list as find-leverage's network_model. `.agents` is
+# not in it, and every skill in this library lives under `.agents/skills`.
+SKIP_DIRS = {".git", ".github", "node_modules", "__pycache__", "venv", ".venv", ".cursor"}
+
+
 def core_skill_names(root: str) -> Set[str]:
     """Every folder under the repo root that holds a SKILL.md."""
     names = set()
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
         if "SKILL.md" in filenames:
             names.add(os.path.basename(dirpath))
     return names
