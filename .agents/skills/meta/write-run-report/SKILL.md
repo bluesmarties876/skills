@@ -44,7 +44,7 @@ In a skill's own docs, name a status by its emoji and word (🟡 Your turn). In 
 | Label | Means | How it is handled |
 | --- | --- | --- |
 | **Do now** | An action only the person can take | steps saying exactly how, then the confirmation question |
-| **Decide** | A choice only the person can make | a structured question: two to four plain options, the recommended one first and marked |
+| **Decide** | A choice only the person can make | a structured question: two to four plain options, the recommended one first with its label ending "(recommended)" |
 | **Saved for later** | Worth coming back to, not now | recorded through the `follow-ups` hook; the reply says where |
 | **Good to know** | No action, ever | one sentence, only if it changes how they read the result. Two at most |
 

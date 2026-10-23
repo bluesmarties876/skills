@@ -140,14 +140,27 @@ outstanding? who owns this?) as questions, not assumptions.
   asks. Not a paragraph.
 - **The proposal in the option itself.** An option says exactly what will happen, with
   every setting visible, so choosing it is the whole decision. For a task: "Create task:
-  <name> · <project> · <estimate> · <priority> · due <date time zone>, <firmness>
-  (auto-scheduled)". For a close: "Archive these 3 emails". Never a bare "Create as
-  proposed" whose settings are only in the question text or the report.
+  <name> · <project> · <estimate> · <priority> · due <date>". For a close: "Archive these
+  3 emails". Never a bare "Create as proposed" whose settings are only in the question
+  text or the report.
+- **Show what is particular to this item, not what is always true.** A setting the
+  `task-platform` hook applies to every task (always scheduled the same way, a default
+  deadline firmness) is not repeated on each option; show it only where this item departs
+  from it. Write dates in the person's own time zone without naming it, and a due date
+  that means the whole day without a time.
 - **Propose, don't ask.** Fill every setting with a sensible value, as
   [capture-task-from-email](../capture-task-from-email/SKILL.md) says. The person corrects
   a wrong value; they are never asked to supply a routine one.
-- **The recommended option first, and marked**, among two to four options. The free-text
-  answer is where corrections go.
+- **One proposal, and a way to decline.** The recommended proposal comes first, its label
+  ending "(recommended)", then Skip (or Keep, for a close). Add a variant only when one
+  setting is genuinely uncertain, and make it differ from the proposal in that setting
+  alone; never more than three options. Variants on every setting bury the decision.
+  The free-text answer is where corrections go.
+- **A check only the person can make becomes a task, not a question.** When an item stays
+  open until the person does something away from the mail (looks in the post, checks
+  whether something has arrived), propose capturing that check as a task rather than
+  asking whether it is done. The source email can then close on the task's read-back, so
+  nothing waits on the person remembering to come back.
 - **One question per decision.** Each proposed task, reply or ask-first item is its own
   question; a send, an archive and a task are separate questions. Several questions in
   one set is right. Archive decisions for items whose work is verified elsewhere, and for
