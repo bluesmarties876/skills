@@ -27,7 +27,7 @@ A woken ally may read, rank, run a skill's unattended path, build on a branch an
 | the master ally | keep each peer's own duties in place, as a client ally does | (wake itself) | wake |
 | the master ally | read what every workspace reported | `collect-ally-reports` | 1 day |
 | the master ally | find the change that would pay off most, and record it for a verdict | `find-leverage` | 1 day |
-| the master ally | build the oldest accepted decision whose change is specified, and open it as a pull request | not yet held in the core | 1 day |
+| the master ally | build the oldest accepted decision whose change is specified, and open it as a pull request | `build-accepted-decision` | 1 day |
 | the master ally | find local skills the core does not hold | `find-publish-candidates` | 7 days |
 
 A duty whose skill the core does not hold yet is not skipped quietly: wake reports it, every time it falls due, until the skill exists.
