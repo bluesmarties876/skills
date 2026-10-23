@@ -13,7 +13,7 @@ Works on GitHub through the `github-api` skill: reports are issues on the core r
 
 ## Repo facts
 
-Read from the core's agent instructions (`AGENTS.md`). If one is missing, stop with 🟡 Your turn, asking for that setting.
+Read them yourself from the core's agent instructions (`AGENTS.md`) on its base branch, fetched through `github-api`. Never ask a person for them. If one is missing from the core, that is for a maintainer, not this workspace's person: do the day as a dry run, say in the run's working notes which fact is missing, and end 🔴 Stopped with "the shared skills library is missing a setting this report needs; nothing was sent".
 
 | Setting | Used for |
 | --- | --- |
@@ -32,11 +32,11 @@ Read from the core's agent instructions (`AGENTS.md`). If one is missing, stop w
 | Input | Needed for | Without it |
 | --- | --- | --- |
 | The feedback log, through the hook | the records | see the hook |
-| The core repo, as a folder on disk | checking that a skill name is one the core holds | ask for it. Fetch it as a tarball through `github-api` |
-| The commit the workspace is synced to | `core_ref` | ask for it |
-| This workspace's reporter id | `reporter` | make one with `report.py --new-reporter` and store it through the `feedback-log` hook. Never derive it from a name |
-| A GitHub token with Issues write and Metadata read on the core repo | sending | `--dry-run` only, and ask for it. The token needs no Contents permission, and should not have it |
-| The list of this workspace's peer agents | heartbeats | ask for it |
+| The core repo, as a folder on disk | checking that a skill name is one the core holds | fetch the base branch as a tarball through `github-api`. Never ask |
+| The commit the workspace is synced to | `core_ref` | use the commit of the base branch you just fetched. Never ask |
+| This workspace's reporter id | `reporter` | make one with `report.py --new-reporter` and store it through the `feedback-log` hook, or, without one, as the workspace setting `ally-reporter-id` through [write-workspace-setting](../write-workspace-setting/SKILL.md). Never derive it from a name, and never ask |
+| A GitHub token with Issues write and Metadata read on the core repo | sending | `--dry-run` only, and hand back one Do now: add the GitHub connection in this workspace's integration settings, giving it Issues access to the shared skills library. The token needs no Contents permission, and should not have it |
+| This workspace's peers | heartbeats | the agents in the core's `PEERS.md` that are installed here, as [wake](../wake/SKILL.md#peers) finds them. Never ask |
 
 ## Safety
 
@@ -128,8 +128,8 @@ Reply as [write-run-report](../write-run-report/SKILL.md) says. It usually runs 
 | --- | --- |
 | 🟢 Finished | Every non-`ok` entry was sent or deliberately dropped, and the heartbeats are checked. Mention drops (Good to know). |
 | 🔵 Waiting | Sent, but a peer could not be repaired; the core now has its failure. |
-| 🟡 Your turn | A repo fact, the token, the core folder, `core_ref` or the peer list is missing, or the heartbeat issue does not exist. |
-| 🔴 Stopped | The selftest failed, or GitHub refused the call. Say plainly what failed. |
+| 🟡 Your turn | The token is missing, or the heartbeat issue does not exist. Say it in plain words: "connect GitHub", not a setting or label name. |
+| 🔴 Stopped | The selftest failed, GitHub refused the call, or the core is missing a repo fact. Say plainly what failed. |
 
 ## Known limits
 
