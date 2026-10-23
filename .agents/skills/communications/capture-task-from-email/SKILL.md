@@ -66,7 +66,7 @@ description. Decide one of:
 
 | Finding | Do |
 | --- | --- |
-| An open task already covers the action | do not create; point the person to it; offer to update its settings if the email changes them |
+| An open task already covers the action: the same action, owed to the same person | do not create; point the person to it; offer to update its settings if the email changes them |
 | A completed task covers an earlier instance of the same recurring thing | create; say in the description that it is a new instance |
 | A cancelled task with the same scope | create only if the person confirms the scope is live again |
 | Nothing matches | create |
@@ -79,7 +79,10 @@ the project is a question.
 
 Present one proposal with every setting named and filled: name, project, estimate,
 priority, due date with time zone, deadline firmness, scheduling flag, and the
-description's first line (which cites the source email by subject and date). Propose a
+description's first line (which cites the source email by subject and date). A setting
+the `task-platform` companion applies to every task is still applied, but is not repeated
+in each option; the option shows it only where this task departs from it. A follow-up
+owed to a different person from an existing task's is a new task, even on a related topic. Propose a
 sensible value for every setting rather than asking the person to supply one: estimate
 from the size of the ask and from similar tasks on the platform, priority from urgency and
 the platform's default, the due date as below. The proposal is still only a proposal:
@@ -120,7 +123,7 @@ captured, and the caller must not close the source email on the strength of it.
 - [ ] Every setting proposed by name; none applied from silence.
 - [ ] Implied dates labelled as implied; computed windows shown with their arithmetic.
 - [ ] Description cites the source email and names what the task does not authorise.
-- [ ] Every setting filled with a proposed value, shown in the approval option.
+- [ ] Every setting filled with a proposed value, shown in the approval option unless the companion applies it to every task.
 - [ ] Task read back by id and compared field by field; a slot after the deadline is reported.
 
 ## Ending

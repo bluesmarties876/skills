@@ -97,7 +97,7 @@ A missing setting that changes whether a skill succeeds is not left as a name fo
 
 A run is **interactive** when a person is in the conversation, and **unattended** when nobody is: an automation, a webhook, a scheduled job. The prompt that starts an unattended run says so. If it does not, assume interactive.
 
-- **Interactive.** When a decision is the person's to make, ask. Use a structured question if your tool has one. Otherwise ask in prose: two to four options, the recommended one first and marked, and one line on what each costs. When the person has to do something, ask them to confirm when it is done, so the run can finish its own part ([write-run-report](.agents/skills/meta/write-run-report/SKILL.md#getting-from--to-)).
+- **Interactive.** When a decision is the person's to make, ask. Use a structured question if your tool has one. Otherwise ask in prose: two to four options, the recommended one first with its label ending "(recommended)", and one line on what each costs. When the person has to do something, ask them to confirm when it is done, so the run can finish its own part ([write-run-report](.agents/skills/meta/write-run-report/SKILL.md#getting-from--to-)).
 - **Unattended.** Never wait for an answer. Take the recommended option where the skill allows it. Where it does not, stop with 🟡 Your turn and send what the person must do or decide through the `follow-ups` hook.
 
 ## Evidence
