@@ -177,9 +177,9 @@ The first seven came from the maintainer, before this skill existed. They are th
 ### D-15: Remember settings and the last run
 
 - **Date:** 2026-10-23
-- **Status:** pending
+- **Status:** accepted
 - **Broken flow:** a Cursor workspace keeps its settings in a file a new computer does not have, so the ally's role and any record of what last ran disappear between wakes, and every duty is treated as never run.
 - **Change:** extend `cursor-write-workspace-setting-store` so it also fills `wake-record`. Keep the settings file it already describes, and keep a second copy in the durable memory a cloud automation retains. When the file is missing, restore it from that memory. When both exist and disagree, stop and ask. The wake record there has one row per duty (its name, when it last ran, and how it ended) and one row per wake. Do not commit either copy.
 - **Proposed by:** find-leverage
-- **Verdict reason:** (awaiting a person)
+- **Verdict reason:** The person accepted the proposal and gave no further sentence on this change.
 - **Signal awaited:** none until built.
