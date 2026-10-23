@@ -30,4 +30,6 @@ A woken ally may read, rank, run a skill's unattended path, build on a branch an
 | the master ally | build the oldest accepted decision whose change is specified, and open it as a pull request | `build-accepted-decision` | 1 day |
 | the master ally | find local skills the core does not hold | `find-publish-candidates` | 7 days |
 
+"Every peer agent" means each agent in [PEERS.md](PEERS.md) that is installed in the ally's workspace.
+
 A duty whose skill the core does not hold yet is not skipped quietly: wake reports it, every time it falls due, until the skill exists.

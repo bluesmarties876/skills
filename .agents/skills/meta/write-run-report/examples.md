@@ -73,6 +73,21 @@ A draft only matters once it is sent, so sending it is the person's turn, not �
 >
 > *(question)* **Reconnected?** Done, try again · Something went wrong · Not now
 
+## First wake in a new workspace
+
+An assistant's daily check-in, run for the first time. She set up everything she could choose herself, and asks only what is the person's.
+
+> 🟡 **Your turn** — one quick choice, and one approval.
+>
+> Once a day I check that your other assistants are keeping up with their own reviews, and send the shared skills library a summary of anything that isn't working, without any of your content. This was my first check-in here, so I also set up my own notes.
+>
+> **What to do:**
+> 1. Approve starting Maia and Quill when your workspace asks, so they can review their recent conversations.
+>
+> **Good to know:** Atlas and Ledger aren't installed here yet, so I skipped them.
+>
+> *(question)* **If I need you for something, how should I reach you?** Email to sam@example.com (recommended) · A Slack message · Just leave it in this chat
+
 ## Saved for later, with no `follow-ups` setting
 
 The item becomes a decision instead of being left in the thread:
