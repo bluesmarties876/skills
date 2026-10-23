@@ -91,7 +91,7 @@ A business rule the whole team works to (how subject lines are written, say) is 
 
 ### Setting one that is missing
 
-A missing setting that changes whether a skill succeeds is not left as a name for a person to look up. The agent writes it into this workspace, as [write-workspace-setting](.agents/skills/meta/write-workspace-setting/SKILL.md) says, in the harness it is running in. A person supplies only a value the agent cannot know or must not choose (an address, a role, a decision); interactive, ask for it; unattended, send the question through `follow-ups` and say which setting it is for. The person never has to find where the harness keeps settings.
+A missing setting that changes whether a skill succeeds is not left as a name for a person to look up. The agent writes it into this workspace, as [write-workspace-setting](.agents/skills/meta/write-workspace-setting/SKILL.md) says, in the harness it is running in. A person supplies only a value the agent cannot know or must not choose (an address, a choice between options the agent found, a decision); interactive, ask for it; unattended, send the question through `follow-ups` and say which setting it is for. The person never has to find where the harness keeps settings.
 
 ## Who is watching
 
