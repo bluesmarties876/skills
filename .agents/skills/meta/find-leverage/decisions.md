@@ -183,3 +183,13 @@ The first seven came from the maintainer, before this skill existed. They are th
 - **Proposed by:** find-leverage
 - **Verdict reason:** The person accepted the proposal and gave no further sentence on this change.
 - **Signal awaited:** a wake whose settings file is missing restores it, and the wake record, from the automation's memory, and does not treat every duty as never run.
+
+### D-16: Ask again for the oldest unanswered proposal
+
+- **Date:** 2026-10-24
+- **Status:** pending
+- **Broken flow:** a proposal that is still awaiting a verdict is not brought back on any schedule, so it waits until a person remembers to open the decision record.
+- **Change:** in `find-leverage`, when a run makes no new proposal, ask for a verdict on the oldest pending entry (accept, reject, or not now) and record that verdict the same way a new proposal's verdict is recorded. Do not open a second proposal for that entry.
+- **Proposed by:** find-leverage
+- **Verdict reason:** (awaiting a person)
+- **Signal awaited:** none until built.
